@@ -4,10 +4,14 @@ All notable changes to this project, most recent first.
 
 ## [2.0.0] - 2026-08-11
 
-First public release. The application was translated to English, the interface
-became bilingual, and the project was prepared for open-source distribution.
+First public release, under the new name **Iris**. The application was
+translated to English, the interface became bilingual, and the project was
+prepared for open-source distribution.
 
 ### Added
+- **New name**: the project is now *Iris — Email Sender*. The window title, the
+  interface header and the executable use it; the Python package is `iris`, and
+  the GUI moved to `iris/gui.py`.
 - **English interface**, now the default, with an **Italian** translation
   selectable at runtime from the Configuration tab. The window is redrawn
   immediately, keeping settings, template and recipient list, and the choice is
@@ -100,9 +104,9 @@ and an automated test suite introduced.
   obfuscation, backward compatible on read); on POSIX the file is created with
   `600` permissions.
 - The `emails/` folder cleanup only removes generated `.msg`/`.eml` files.
-- Application logic extracted into the `emailsender` package, independent from
-  Tkinter, covered by a pytest suite and a GitHub Actions pipeline
-  (Linux 3.10/3.11/3.12 with Xvfb, and Windows).
+- Application logic extracted into a package independent from Tkinter, covered
+  by a pytest suite and a GitHub Actions pipeline (Linux 3.10/3.11/3.12 with
+  Xvfb, and Windows).
 
 ## [1.1.x] - 2025
 

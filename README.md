@@ -329,7 +329,7 @@ python build.py --clean    # remove build/ and dist/ only
 
 The result is `dist/Iris.exe` (one file, no console). On Windows `compile.bat` runs the test suite before building.
 
-> Do **not** run `pyinstaller --name=EmailSender main.py` from the project folder: it would overwrite `Iris.spec` with a generated file full of absolute paths. `build.py` avoids this by writing the temporary spec into `build/`.
+> Do **not** run `pyinstaller --name=Iris main.py` from the project folder: it would overwrite `Iris.spec` with a generated file full of absolute paths. `build.py` avoids this by writing the temporary spec into `build/`.
 
 The application icon is generated from primitives by [`assets/make_icon.py`](assets/make_icon.py), so the repository carries no third-party artwork.
 
