@@ -34,6 +34,10 @@ _current_language = DEFAULT_LANGUAGE
 _EN: Dict[str, str] = {
     # -- window / generic --------------------------------------------------
     "app.version_label": "VERSION {version}",
+    "footer.copyright": (
+        "© 2026 Marco Lombardo — {app}  |  Licensed under AGPL-3.0  |  "
+        "Commercial licensing available"
+    ),
     "status.ready": "Ready",
     "dialog.error": "Error",
     "dialog.info": "Information",
@@ -274,6 +278,10 @@ _EN: Dict[str, str] = {
 _IT: Dict[str, str] = {
     # -- finestra / generici -----------------------------------------------
     "app.version_label": "VERSIONE {version}",
+    "footer.copyright": (
+        "© 2026 Marco Lombardo — {app}  |  Distribuito con licenza AGPL-3.0  |  "
+        "Licenza commerciale disponibile"
+    ),
     "status.ready": "Pronto",
     "dialog.error": "Errore",
     "dialog.info": "Informazione",

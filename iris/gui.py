@@ -323,6 +323,15 @@ class IrisApp:
         )
         self.status_label.pack(fill=tk.X)
 
+        self.footer_label = ttk.Label(
+            self.status_frame,
+            text=t("footer.copyright", app=APP_NAME),
+            anchor=tk.CENTER,
+            font=("Arial", 8),
+            foreground="#888888",
+        )
+        self.footer_label.pack(fill=tk.X, pady=(4, 0))
+
     def setup_config_tab(self, parent):
         email_frame = ttk.LabelFrame(parent, text=t("config.sender_frame"))
         email_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
