@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Build
+build/
+dist/
+*.spec
+!Iris.spec
+
+# IDE
+.vscode/
+.idea/
+
+# Logs, sensitive configuration and application output
+logs/
+config.ini
+emails/
+
+# Temporary files produced while generating the screenshots
+docs/_screenshot_*
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak

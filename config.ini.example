@@ -1,0 +1,42 @@
+; Example configuration for Iris - Email Sender.
+;
+; Copy this file as "config.ini" next to the executable (or next to the source
+; tree) and fill in the values — or, more simply, configure everything from the
+; CONFIGURATION tab of the application and press SAVE CONFIGURATION.
+;
+; WARNING: config.ini holds your mail server credentials. The password is
+; stored obfuscated (base64, "b64:" prefix): that prevents casual reading, it
+; is NOT encryption. Never share this file and never commit it (it is already
+; listed in .gitignore).
+
+[EMAIL]
+; Interface language: en | it
+language = en
+
+; Sender address
+sender_email = sender@example.com
+
+; SMTP server and port
+smtp_server = smtp.example.com
+smtp_port = 587
+
+; Connection type: ssl | starttls | none
+;   ssl      -> port 465 (implicit TLS)
+;   starttls -> port 587 (Gmail, Outlook, most corporate servers)
+;   none     -> port 25  (internal relay, no encryption)
+connection_type = starttls
+
+; Credentials: leave BOTH empty to send without authentication
+smtp_user = sender@example.com
+smtp_password =
+
+; Email template. The {COMPANY} placeholder is replaced with the recipient
+; company name extracted from the document. {AZIENDA} is also accepted, for
+; backward compatibility with templates written for version 1.x.
+email_subject = Notice for {COMPANY}
+email_body = Dear {COMPANY},
+	please find the notice attached.
+	Kind regards.
+
+; Optional attachment sent to every recipient (full path)
+attachment_path =
