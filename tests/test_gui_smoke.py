@@ -481,3 +481,49 @@ def test_an_unreadable_pause_blocks_the_send(app):
     _configure(app)
     app.send_delay.set("now and then")
     assert app.validate_email_config() is False
+
+
+# --------------------------------------------------------------------------
+# Commercial licensing contact
+# --------------------------------------------------------------------------
+def test_the_footer_shows_the_licensing_address(app):
+    from iris.version import CONTACT_EMAIL
+
+    assert app.footer_email.cget("text") == CONTACT_EMAIL
+    assert "AGPL-3.0" in app.footer_label.cget("text")
+
+
+def test_clicking_the_address_opens_the_mail_client(app, monkeypatch):
+    from iris import gui
+    from iris.version import CONTACT_EMAIL
+
+    opened = []
+    monkeypatch.setattr(gui.webbrowser, "open", opened.append)
+
+    app.open_licensing_email()
+
+    assert len(opened) == 1
+    assert opened[0].startswith(f"mailto:{CONTACT_EMAIL}?subject=")
+
+
+def test_a_missing_mail_client_does_not_crash(app, monkeypatch):
+    from iris import gui
+
+    def explode(url):
+        raise OSError("no mail client")
+
+    monkeypatch.setattr(gui.webbrowser, "open", explode)
+
+    app.open_licensing_email()  # must not raise: the address is on screen anyway
+
+    assert app.root.winfo_exists()
+
+
+def test_the_address_survives_a_language_switch(app):
+    from iris.version import CONTACT_EMAIL
+
+    app.language_display.set("Italiano")
+    app.on_language_change()
+
+    assert app.footer_email.cget("text") == CONTACT_EMAIL
+    assert "Licenza commerciale" in app.footer_label.cget("text")

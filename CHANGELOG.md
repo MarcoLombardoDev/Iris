@@ -31,6 +31,11 @@ licence covers redistribution rights, never features.
   injection point on `send_bulk()` so the pause is testable without waiting.
 - **AGPL-3.0 notice header** on every source file, as the licence itself
   recommends, each pointing at the commercial alternative.
+- **Commercial licensing contact in the application itself.** The footer used
+  to say "commercial licensing available" without saying how; it now shows the
+  address, and clicking it opens the mail client on a pre-filled enquiry. The
+  address lives in `version.CONTACT_EMAIL`, so the interface, the README and
+  `COMMERCIAL-LICENSE.md` cannot drift apart.
 - **`COMMERCIAL-LICENSE.md`** — scope of the commercial licence, what it does
   and does not include, and the price list. The README license section now
   carries the same list instead of only an email address.
@@ -42,7 +47,7 @@ licence covers redistribution rights, never features.
   OPTIONS frame collects the pause and the language selector (which used to sit
   among the sender fields, where it never belonged).
 - The default window is 900x800 (was 900x750) to fit the reorganised tab.
-- Test suite grown from 129 to 170 tests.
+- Test suite grown from 129 to 174 tests.
 
 ### Compatibility
 - A `config.ini` written by 2.0.x loads unchanged: the new keys default to

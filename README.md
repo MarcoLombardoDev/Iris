@@ -3,7 +3,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Commercial License Available](https://img.shields.io/badge/Commercial%20License-Available-green.svg)](#license--commercial-licensing)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-170%20passing-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-174%20passing-brightgreen.svg)](#testing)
 
 **Iris** is a desktop application that turns a document full of company names and email addresses into a batch of personalised emails — and sends them, or writes them to disk for review.
 
@@ -361,7 +361,7 @@ Without a display the GUI tests are skipped automatically and the rest still run
 |---|---:|---|
 | `tests/test_parsers.py` | 33 | Address validation, text, tables, PDF, CSV, `.xls`, unsupported formats |
 | `tests/test_mailer.py` | 43 | Templates, validation, headers, non-ASCII text, attachments, bulk sending, pause between messages |
-| `tests/test_gui_smoke.py` | 27 | Start-up, analysis, validation, configuration, sender profiles, templates, language switching, end-to-end send |
+| `tests/test_gui_smoke.py` | 31 | Start-up, analysis, validation, configuration, sender profiles, templates, language switching, end-to-end send |
 | `tests/test_config_store.py` | 37 | Save/reload, password obfuscation, encodings, language, saved profiles and templates, backward compatibility |
 | `tests/test_i18n.py` | 19 | Catalogue consistency, placeholders, fallbacks |
 | `tests/test_msgwriter.py` | 7 | `.eml`, attachments, fallback without Outlook, folder cleanup |
@@ -445,7 +445,13 @@ The commercial licence removes the copyleft obligation, and nothing else. It is 
 
 List prices, excluding VAT; the final figure is set in the signed agreement. Full terms, scope and what is *not* included are in **[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
 
-For enquiries — including "do we actually need this?", which is often answered with *no* — contact **Marco Lombardo** at [marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com).
+### How to get in touch
+
+Everything commercial — buying a licence, asking for a quote, or checking whether you need one at all (the answer is often *no*) — goes to one address:
+
+> **[marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com)** — Marco Lombardo
+
+The same address is shown in the application's footer, and clicking it opens your mail client on a pre-filled enquiry. Please keep **GitHub Issues for bugs and feature requests**, not for licensing.
 
 ## Disclaimer
 

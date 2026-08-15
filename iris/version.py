@@ -20,3 +20,7 @@ APP_NAME = "Iris"
 
 #: Full name shown in the window title and in the interface.
 APP_TITLE = "Iris - Email Sender"
+
+#: Where commercial licensing enquiries go. Single source of truth: the
+#: interface, the README and COMMERCIAL-LICENSE.md must never disagree.
+CONTACT_EMAIL = "marco.lombardo@gmail.com"

@@ -47,9 +47,10 @@ _EN: Dict[str, str] = {
     # -- window / generic --------------------------------------------------
     "app.version_label": "VERSION {version}",
     "footer.copyright": (
-        "© 2026 Marco Lombardo — {app}  |  Licensed under AGPL-3.0  |  "
-        "Commercial licensing available"
+        "© 2026 Marco Lombardo — {app}  |  Licensed under AGPL-3.0  |  Commercial licensing:"
     ),
+    "footer.email_hint": "Write for a commercial licence or a quote",
+    "footer.email_subject": "{app} — commercial licence enquiry",
     "status.ready": "Ready",
     "dialog.error": "Error",
     "dialog.info": "Information",
@@ -175,6 +176,7 @@ _EN: Dict[str, str] = {
     # -- log messages ------------------------------------------------------
     "log.logging_ready": "Logging system initialized. Log file: {path}",
     "log.icon_error": "Could not set the window icon: {error}",
+    "log.mail_client_error": "Could not open the mail client ({error}). Write to {email}",
     "log.bootstrap_missing": "ttkbootstrap not available: {error}",
     "log.bootstrap_active": "ttkbootstrap active (theme {theme})",
     "log.bootstrap_fallback": "ttkbootstrap not applied, falling back to standard ttk: {error}",
@@ -324,8 +326,10 @@ _IT: Dict[str, str] = {
     "app.version_label": "VERSIONE {version}",
     "footer.copyright": (
         "© 2026 Marco Lombardo — {app}  |  Distribuito con licenza AGPL-3.0  |  "
-        "Licenza commerciale disponibile"
+        "Licenza commerciale:"
     ),
+    "footer.email_hint": "Scrivi per una licenza commerciale o un preventivo",
+    "footer.email_subject": "{app} — richiesta di licenza commerciale",
     "status.ready": "Pronto",
     "dialog.error": "Errore",
     "dialog.info": "Informazione",
@@ -452,6 +456,7 @@ _IT: Dict[str, str] = {
     # -- messaggi di log ---------------------------------------------------
     "log.logging_ready": "Sistema di logging inizializzato. File di log: {path}",
     "log.icon_error": "Impossibile impostare l'icona della finestra: {error}",
+    "log.mail_client_error": "Impossibile aprire il client di posta ({error}). Scrivi a {email}",
     "log.bootstrap_missing": "ttkbootstrap non disponibile: {error}",
     "log.bootstrap_active": "ttkbootstrap attivo (tema {theme})",
     "log.bootstrap_fallback": "ttkbootstrap non applicato, uso il tema ttk standard: {error}",

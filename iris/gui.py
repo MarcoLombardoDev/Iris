@@ -25,7 +25,9 @@ import queue
 import sys
 import threading
 import tkinter as tk
+import webbrowser
 from tkinter import filedialog, messagebox, scrolledtext, simpledialog, ttk
+from urllib.parse import quote
 
 from iris import config_store, i18n, mailer, msgwriter, paths
 from iris.i18n import t
@@ -35,7 +37,7 @@ from iris.parsers import (
     UnsupportedFormatError,
     extract_from_file,
 )
-from iris.version import APP_NAME, APP_TITLE, __version__
+from iris.version import APP_NAME, APP_TITLE, CONTACT_EMAIL, __version__
 
 # ttkbootstrap is optional: without it the standard ttk theme is used.
 BOOTSTRAP_ERROR = None
@@ -143,6 +145,18 @@ class IrisApp:
                 self.root.iconphoto(True, self._icon_photo)
         except Exception as exc:
             self.log(t("log.icon_error", error=exc), level=logging.WARNING)
+
+    def open_licensing_email(self, event=None):
+        """Open the mail client on a commercial licensing enquiry."""
+        subject = quote(t("footer.email_subject", app=APP_TITLE))
+        try:
+            webbrowser.open(f"mailto:{CONTACT_EMAIL}?subject={subject}")
+        except Exception as exc:
+            # No mail client configured: the address is on screen anyway.
+            self.log(
+                t("log.mail_client_error", error=exc, email=CONTACT_EMAIL),
+                level=logging.WARNING,
+            )
 
     def setup_logging(self):
         """Configure file logging."""
@@ -342,14 +356,31 @@ class IrisApp:
         )
         self.status_label.pack(fill=tk.X)
 
+        # Copyright line, with the licensing address spelled out: whoever is
+        # running the application is exactly the person who may need to buy a
+        # commercial licence, and "available on request" tells them nothing.
+        footer = ttk.Frame(self.status_frame)
+        footer.pack(fill=tk.X, pady=(4, 0))
+        footer_center = ttk.Frame(footer)
+        footer_center.pack(anchor=tk.CENTER)
+
         self.footer_label = ttk.Label(
-            self.status_frame,
+            footer_center,
             text=t("footer.copyright", app=APP_NAME),
-            anchor=tk.CENTER,
             font=("Arial", 8),
             foreground="#888888",
         )
-        self.footer_label.pack(fill=tk.X, pady=(4, 0))
+        self.footer_label.pack(side=tk.LEFT)
+
+        self.footer_email = ttk.Label(
+            footer_center,
+            text=CONTACT_EMAIL,
+            font=("Arial", 8, "underline"),
+            foreground="#1a5fb4",
+            cursor="hand2",
+        )
+        self.footer_email.pack(side=tk.LEFT, padx=(4, 0))
+        self.footer_email.bind("<Button-1>", self.open_licensing_email)
 
     def setup_config_tab(self, parent):
         email_frame = ttk.LabelFrame(parent, text=t("config.sender_frame"))

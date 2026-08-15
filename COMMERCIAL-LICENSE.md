@@ -5,6 +5,8 @@ Copyright © 2026 Marco Lombardo
 
 Iris is published under the [GNU Affero General Public License v3.0](LICENSE). This document describes the **alternative commercial licence**, for the cases where the AGPL-3.0 obligations do not fit.
 
+**To buy, or to ask anything commercial — including whether you need this at all — email [marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com).** That address is the single channel for licensing: quotes, contracts, invoicing and pre-sales questions all go there. Use GitHub Issues for bugs and features, not for licensing.
+
 > This page is a **commercial offer and summary of terms**, not the signed agreement itself. The binding contract is issued and signed per customer. Have your own legal counsel review it before signing.
 
 ---
