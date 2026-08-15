@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+#
+# Iris - Email Sender
+# Copyright (C) 2026 Marco Lombardo
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version. It is distributed WITHOUT ANY WARRANTY; see the
+# GNU Affero General Public License in LICENSE for details.
+#
+# A commercial licence, without the AGPL obligations, is available for use in
+# proprietary or closed-source products - see COMMERCIAL-LICENSE.md.
 """Minimal translation layer for the whole application.
 
 The module has no third-party dependency and never imports Tkinter, so every
@@ -57,7 +69,14 @@ _EN: Dict[str, str] = {
     "config.password": "PASSWORD",
     "config.auth_note": "Empty username and password = no authentication",
     "config.language": "LANGUAGE",
+    "config.profile": "SENDER PROFILE",
     "config.template_frame": "EMAIL TEMPLATE",
+    "config.template": "TEMPLATE",
+    "config.save_as": "SAVE AS...",
+    "config.delete": "DELETE",
+    "config.options_frame": "OPTIONS",
+    "config.send_delay": "PAUSE BETWEEN MESSAGES",
+    "config.send_delay_hint": "seconds (0 = send without pausing)",
     "config.subject": "SUBJECT *",
     "config.message": "MESSAGE *",
     "config.variables": "Variables: {placeholder}",
@@ -141,6 +160,18 @@ _EN: Dict[str, str] = {
         "An operation is still running.\nDo you want to stop it and close the application?"
     ),
     "dialog.config_saved": "Configuration saved successfully to:\n{path}",
+    # -- profiles and templates --------------------------------------------
+    "dialog.profile_name_title": "Save sender profile",
+    "dialog.profile_name_body": "Name for this sender profile:",
+    "dialog.template_name_title": "Save template",
+    "dialog.template_name_body": "Name for this template:",
+    "dialog.name_required": "Enter a name (letters, digits and spaces).",
+    "dialog.profile_overwrite": "A profile named '{name}' already exists. Replace it?",
+    "dialog.template_overwrite": "A template named '{name}' already exists. Replace it?",
+    "dialog.confirm_delete_profile": "Delete the sender profile '{name}'?",
+    "dialog.confirm_delete_template": "Delete the template '{name}'?",
+    "dialog.select_profile": "Select a sender profile from the list first.",
+    "dialog.select_template": "Select a template from the list first.",
     # -- log messages ------------------------------------------------------
     "log.logging_ready": "Logging system initialized. Log file: {path}",
     "log.icon_error": "Could not set the window icon: {error}",
@@ -161,6 +192,14 @@ _EN: Dict[str, str] = {
     "log.attachment_removed": "Attachment removed: {path}",
     "log.connection_type": "Connection type set to: {value}",
     "log.language_changed": "Language changed to {language}",
+    "log.profile_saved": "Sender profile saved: {name}",
+    "log.profile_loaded": "Sender profile loaded: {name}",
+    "log.profile_deleted": "Sender profile deleted: {name}",
+    "log.template_saved": "Template saved: {name}",
+    "log.template_loaded": "Template loaded: {name}",
+    "log.template_deleted": "Template deleted: {name}",
+    "log.profile_error": "Could not save the sender profile: {error}",
+    "log.template_error": "Could not save the template: {error}",
     "log.invalid_config": "Invalid configuration: {error}",
     "log.config_saved": "Configuration saved to {path}",
     "log.config_save_error": "Error while saving the configuration: {error}",
@@ -193,6 +232,7 @@ _EN: Dict[str, str] = {
     "mailer.authenticating": "Authenticating user {user}...",
     "mailer.no_auth": "Connecting without authentication.",
     "mailer.reconnecting": "SMTP connection lost: reconnecting...",
+    "mailer.delay_active": "Pausing {seconds} s between one message and the next.",
     "mailer.sent": "Email sent to {company} <{email}>",
     "mailer.send_error": "ERROR sending to {company} <{email}>: {error}",
     "mailer.aborted": "Blocking error: aborting the batch.",
@@ -222,6 +262,10 @@ _EN: Dict[str, str] = {
     "validate.body_missing": "Enter the email message in the configuration.",
     "validate.attachment_missing": "The selected attachment does not exist: {path}",
     "validate.recipient_invalid": "Invalid recipient address: {value}",
+    "validate.delay_invalid": (
+        "The pause between messages must be a number of seconds equal to or greater than 0."
+    ),
+    "validate.name_required": "A profile or template name cannot be empty.",
     # -- SMTP errors -------------------------------------------------------
     "smtp.auth": (
         "SMTP authentication error: the server rejected the credentials ({error}). "
@@ -301,7 +345,14 @@ _IT: Dict[str, str] = {
     "config.password": "PASSWORD",
     "config.auth_note": "Nome utente e password vuoti = nessuna autenticazione",
     "config.language": "LINGUA",
+    "config.profile": "PROFILO MITTENTE",
     "config.template_frame": "TEMPLATE EMAIL",
+    "config.template": "MODELLO",
+    "config.save_as": "SALVA COME...",
+    "config.delete": "ELIMINA",
+    "config.options_frame": "OPZIONI",
+    "config.send_delay": "PAUSA TRA I MESSAGGI",
+    "config.send_delay_hint": "secondi (0 = invio senza pause)",
     "config.subject": "OGGETTO *",
     "config.message": "MESSAGGIO *",
     "config.variables": "Variabili: {placeholder}",
@@ -386,6 +437,18 @@ _IT: Dict[str, str] = {
         "Un'operazione è ancora in corso.\nVuoi interromperla e chiudere l'applicazione?"
     ),
     "dialog.config_saved": "Configurazione salvata con successo in:\n{path}",
+    # -- profili e template ------------------------------------------------
+    "dialog.profile_name_title": "Salva profilo mittente",
+    "dialog.profile_name_body": "Nome per questo profilo mittente:",
+    "dialog.template_name_title": "Salva template",
+    "dialog.template_name_body": "Nome per questo template:",
+    "dialog.name_required": "Inserisci un nome (lettere, cifre e spazi).",
+    "dialog.profile_overwrite": "Esiste già un profilo di nome '{name}'. Vuoi sostituirlo?",
+    "dialog.template_overwrite": "Esiste già un template di nome '{name}'. Vuoi sostituirlo?",
+    "dialog.confirm_delete_profile": "Vuoi eliminare il profilo mittente '{name}'?",
+    "dialog.confirm_delete_template": "Vuoi eliminare il template '{name}'?",
+    "dialog.select_profile": "Seleziona prima un profilo mittente dall'elenco.",
+    "dialog.select_template": "Seleziona prima un template dall'elenco.",
     # -- messaggi di log ---------------------------------------------------
     "log.logging_ready": "Sistema di logging inizializzato. File di log: {path}",
     "log.icon_error": "Impossibile impostare l'icona della finestra: {error}",
@@ -406,6 +469,14 @@ _IT: Dict[str, str] = {
     "log.attachment_removed": "Allegato rimosso: {path}",
     "log.connection_type": "Tipo di connessione impostato su: {value}",
     "log.language_changed": "Lingua impostata su {language}",
+    "log.profile_saved": "Profilo mittente salvato: {name}",
+    "log.profile_loaded": "Profilo mittente caricato: {name}",
+    "log.profile_deleted": "Profilo mittente eliminato: {name}",
+    "log.template_saved": "Template salvato: {name}",
+    "log.template_loaded": "Template caricato: {name}",
+    "log.template_deleted": "Template eliminato: {name}",
+    "log.profile_error": "Impossibile salvare il profilo mittente: {error}",
+    "log.template_error": "Impossibile salvare il template: {error}",
     "log.invalid_config": "Configurazione non valida: {error}",
     "log.config_saved": "Configurazione salvata in {path}",
     "log.config_save_error": "Errore durante il salvataggio della configurazione: {error}",
@@ -438,6 +509,7 @@ _IT: Dict[str, str] = {
     "mailer.authenticating": "Autenticazione dell'utente {user}...",
     "mailer.no_auth": "Connessione senza autenticazione.",
     "mailer.reconnecting": "Connessione SMTP caduta: riconnessione in corso...",
+    "mailer.delay_active": "Pausa di {seconds} s tra un messaggio e il successivo.",
     "mailer.sent": "Email inviata a {company} <{email}>",
     "mailer.send_error": "ERRORE nell'invio a {company} <{email}>: {error}",
     "mailer.aborted": "Errore bloccante: interruzione del lotto.",
@@ -469,6 +541,10 @@ _IT: Dict[str, str] = {
     "validate.body_missing": "Inserire il messaggio dell'email nella configurazione.",
     "validate.attachment_missing": "L'allegato selezionato non esiste: {path}",
     "validate.recipient_invalid": "Indirizzo del destinatario non valido: {value}",
+    "validate.delay_invalid": (
+        "La pausa tra i messaggi deve essere un numero di secondi maggiore o uguale a 0."
+    ),
+    "validate.name_required": "Il nome di un profilo o di un template non può essere vuoto.",
     # -- errori SMTP -------------------------------------------------------
     "smtp.auth": (
         "Errore di autenticazione SMTP: credenziali rifiutate dal server ({error}). "

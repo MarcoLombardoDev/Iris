@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+#
+# Iris - Email Sender
+# Copyright (C) 2026 Marco Lombardo
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version. It is distributed WITHOUT ANY WARRANTY; see the
+# GNU Affero General Public License in LICENSE for details.
+#
+# A commercial licence, without the AGPL obligations, is available for use in
+# proprietary or closed-source products - see COMMERCIAL-LICENSE.md.
 """Extraction of (company, email) pairs from the supported documents.
 
 The module never imports Tkinter: it is pure logic, testable without a

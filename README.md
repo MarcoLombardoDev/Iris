@@ -3,7 +3,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Commercial License Available](https://img.shields.io/badge/Commercial%20License-Available-green.svg)](#license--commercial-licensing)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-129%20passing-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-170%20passing-brightgreen.svg)](#testing)
 
 **Iris** is a desktop application that turns a document full of company names and email addresses into a batch of personalised emails — and sends them, or writes them to disk for review.
 
@@ -19,7 +19,7 @@ The interface is available in **English (default)** and **Italian**, switchable 
 
 | | |
 |---|---|
-| **Processing** — recipients extracted from a document, ready to send | **Configuration** — SMTP settings, template with `{COMPANY}`, language |
+| **Processing** — recipients extracted from a document, ready to send | **Configuration** — sender profiles, saved templates, `{COMPANY}`, send options |
 | ![Processing tab](docs/screenshots/01_processing_en.png) | ![Configuration tab](docs/screenshots/02_configuration_en.png) |
 | **Log** — every step, from parsing to the SMTP dialogue | **Italian interface** — the same screen after switching language |
 | ![Log tab](docs/screenshots/03_log_en.png) | ![Italian configuration tab](docs/screenshots/02_configuration_it.png) |
@@ -35,19 +35,20 @@ The interface is available in **English (default)** and **Italian**, switchable 
 3. [Installation](#installation)
 4. [Quick Start](#quick-start)
 5. [Configuration](#configuration)
-6. [Input Formats](#input-formats)
-7. [Sending](#sending)
-8. [Creating Emails Without Sending](#creating-emails-without-sending)
-9. [Language Switching](#language-switching)
-10. [Where Files Are Stored](#where-files-are-stored)
-11. [Security Notes](#security-notes)
-12. [Architecture](#architecture)
-13. [Testing](#testing)
-14. [Building the Executable](#building-the-executable)
-15. [Troubleshooting](#troubleshooting)
-16. [Contributing](#contributing)
-17. [License & Commercial Licensing](#license--commercial-licensing)
-18. [Disclaimer](#disclaimer)
+6. [Sender Profiles and Templates](#sender-profiles-and-templates)
+7. [Input Formats](#input-formats)
+8. [Sending](#sending)
+9. [Creating Emails Without Sending](#creating-emails-without-sending)
+10. [Language Switching](#language-switching)
+11. [Where Files Are Stored](#where-files-are-stored)
+12. [Security Notes](#security-notes)
+13. [Architecture](#architecture)
+14. [Testing](#testing)
+15. [Building the Executable](#building-the-executable)
+16. [Troubleshooting](#troubleshooting)
+17. [Contributing](#contributing)
+18. [License & Commercial Licensing](#license--commercial-licensing)
+19. [Disclaimer](#disclaimer)
 
 ---
 
@@ -56,14 +57,19 @@ The interface is available in **English (default)** and **Italian**, switchable 
 - **Multi-format parsing** — PDF, Excel (`.xlsx` / `.xlsm` / `.xls`), CSV, Word (`.docx`) and plain text (`.txt`)
 - **Automatic extraction** of company names and email addresses, with column order detected by content rather than position
 - **Personalised templates** — `{COMPANY}` in the subject and body is replaced per recipient
+- **Template library** — save subject, message and attachment under a name and switch between them in one click
+- **Sender profiles** — keep several SMTP configurations (work account, internal relay, a client's server) and swap them from a drop-down
 - **Optional attachment** shared by every message
 - **SMTP delivery** over SSL/TLS, STARTTLS or plain, with or without authentication
 - **Connection test** that validates server and credentials without sending anything
 - **Single-connection batches** with automatic reconnection and early abort on unrecoverable errors
+- **Configurable pause between messages**, to stay under a provider's rate limit
 - **Offline generation** — write `.msg` files (Outlook on Windows) or standard `.eml` files instead of sending
 - **Bilingual interface** — English and Italian, switched at runtime
 - **Full logging** — on screen and to a daily file
-- **Persistent configuration** in `config.ini`, with the password stored obfuscated
+- **Persistent configuration** in `config.ini`, with every password stored obfuscated
+
+Everything above is in the free, open-source build. There is no paid tier, no feature gate and no licence key — see [License & Commercial Licensing](#license--commercial-licensing) for what the commercial licence is actually for.
 
 ## Requirements
 
@@ -128,13 +134,13 @@ All settings live in the *Configuration* tab. Fields marked `*` are required.
 
 | Field | Description |
 |---|---|
+| **SENDER PROFILE** | Recall a saved set of sender settings — see [Sender Profiles](#sender-profiles-and-templates) |
 | **EMAIL ADDRESS** * | Address shown as the sender; must be syntactically valid |
 | **SMTP SERVER** * | Outgoing mail server host name |
 | **SMTP PORT** * | Port number (1–65535) |
 | **CONNECTION TYPE** * | `SSL/TLS`, `STARTTLS` or `None` |
 | **USERNAME** | Login for authentication — leave empty if the server does not require it |
 | **PASSWORD** | Password for that login |
-| **LANGUAGE** | Interface language, applied immediately |
 
 > Username and password must be **both filled in or both empty**. Empty means the message is sent without authentication, as internal relays usually expect.
 
@@ -154,6 +160,7 @@ Gmail and Microsoft 365 require an **app password** when two-factor authenticati
 
 | Field | Description |
 |---|---|
+| **TEMPLATE** | Recall a saved template — see [Templates](#sender-profiles-and-templates) |
 | **SUBJECT** * | Subject line, may contain `{COMPANY}` |
 | **MESSAGE** * | Plain-text body, may contain `{COMPANY}` |
 | **ATTACHMENT** | Optional file attached to every message |
@@ -168,6 +175,46 @@ Message:  Dear {COMPANY},
 For the recipient "Acme Corporation" the subject becomes `Annual notice for Acme Corporation`.
 
 > `{AZIENDA}` — the Italian placeholder used by version 1.x — is still accepted, so existing templates keep working.
+
+### Options
+
+| Field | Description |
+|---|---|
+| **PAUSE BETWEEN MESSAGES** | Seconds to wait between one message and the next. `0` sends the batch at full speed |
+| **LANGUAGE** | Interface language, applied immediately |
+
+A pause is the simplest cure for a provider that rate limits a sender: Gmail, Microsoft 365 and most shared relays are much happier with one message every second or two than with a hundred in a burst. The value accepts decimals (`0.5`), and the batch stays interruptible while it waits — pressing to close the window does not sit through the remaining seconds.
+
+## Sender Profiles and Templates
+
+Both the sender settings and the message can be saved under a name and recalled later, so switching between "the work account" and "the client's relay", or between an annual notice and a payment reminder, does not mean retyping anything.
+
+| Button | Effect |
+|---|---|
+| **SAVE AS...** | Asks for a name and stores the fields currently on screen. An existing name is replaced after confirmation |
+| **DELETE** | Removes the selected entry |
+
+Picking an entry from the drop-down copies it into the fields below, where it can still be edited before sending — loading a profile or a template changes the form, never the file. Saving is immediate: the entry is written to `config.ini` straight away, and the fields you were editing elsewhere are left untouched.
+
+- **Sender profiles** hold the address, server, port, connection type and credentials.
+- **Templates** hold the subject, message and attachment path.
+
+Names are free text; square brackets are dropped and runs of whitespace collapse, because the name becomes a section header inside `config.ini`.
+
+```ini
+[PROFILE:Customer Office]
+sender_email = notices@example.com
+smtp_server = smtp.example.com
+smtp_port = 587
+connection_type = starttls
+smtp_password = b64:...
+
+[TEMPLATE:Annual notice]
+email_subject = Annual notice for {COMPANY}
+email_body = Dear {COMPANY},...
+```
+
+> Profile passwords are obfuscated exactly like the main one — which is to say **not encrypted**. A `config.ini` holding several accounts is that much more sensitive; see [Security Notes](#security-notes).
 
 ## Input Formats
 
@@ -262,7 +309,7 @@ Translations live in a single file, [`iris/i18n.py`](iris/i18n.py), as one dicti
 | Daily logs | `logs/iris_YYYYMMDD.log` |
 | Generated emails | `emails/` |
 
-`config.ini` is looked up in the application folder, then the working directory, then the per-user folder — the first one found wins, so configurations written by earlier versions keep working. If the application folder is not writable (an executable under `C:\Program Files`, say), everything moves to `%APPDATA%\Iris` (`~/.config/Iris` on Linux/macOS). The path actually used is always reported in the *Log* tab at start-up.
+`config.ini` holds the settings currently in use in its `[EMAIL]` section, plus one `[PROFILE:name]` or `[TEMPLATE:name]` section per saved entry. It is looked up in the application folder, then the working directory, then the per-user folder — the first one found wins, so configurations written by earlier versions keep working. If the application folder is not writable (an executable under `C:\Program Files`, say), everything moves to `%APPDATA%\Iris` (`~/.config/Iris` on Linux/macOS). The path actually used is always reported in the *Log* tab at start-up.
 
 ## Security Notes
 
@@ -270,6 +317,7 @@ Translations live in a single file, [`iris/i18n.py`](iris/i18n.py), as one dicti
 - **Nothing is sent without an explicit action.** Analysis, template editing and the connection test never deliver a message.
 - **No telemetry, no external service.** The application talks to your SMTP server and to nothing else.
 - Recipient lists and generated emails stay on your machine.
+- **Saved sender profiles multiply the exposure.** Each profile keeps its own password, obfuscated the same way, so a `config.ini` holding four accounts is four times the problem if it leaks. Do not put a `config.ini` with saved profiles on a shared drive or in a synced folder.
 
 ## Architecture
 
@@ -312,10 +360,10 @@ Without a display the GUI tests are skipped automatically and the rest still run
 | File | Tests | Coverage |
 |---|---:|---|
 | `tests/test_parsers.py` | 33 | Address validation, text, tables, PDF, CSV, `.xls`, unsupported formats |
-| `tests/test_mailer.py` | 27 | Templates, validation, headers, non-ASCII text, attachments, bulk sending |
-| `tests/test_gui_smoke.py` | 19 | Start-up, analysis, validation, configuration, language switching, end-to-end send |
-| `tests/test_config_store.py` | 18 | Save/reload, password obfuscation, encodings, language, backward compatibility |
-| `tests/test_i18n.py` | 20 | Catalogue consistency, placeholders, fallbacks |
+| `tests/test_mailer.py` | 43 | Templates, validation, headers, non-ASCII text, attachments, bulk sending, pause between messages |
+| `tests/test_gui_smoke.py` | 27 | Start-up, analysis, validation, configuration, sender profiles, templates, language switching, end-to-end send |
+| `tests/test_config_store.py` | 37 | Save/reload, password obfuscation, encodings, language, saved profiles and templates, backward compatibility |
+| `tests/test_i18n.py` | 19 | Catalogue consistency, placeholders, fallbacks |
 | `tests/test_msgwriter.py` | 7 | `.eml`, attachments, fallback without Outlook, folder cleanup |
 | `tests/test_smtp_integration.py` | 4 | Real SMTP dialogue, connection reuse, reconnection |
 
@@ -367,22 +415,37 @@ Iris is open-source software released under the **[GNU Affero General Public Lic
 
 Copyright © 2026 Marco Lombardo.
 
+**The free build is the whole product.** Every feature documented above is in it. There is no paid edition, no feature gate, no licence key, no seat limit and no telemetry. If AGPL-3.0 works for you, you are done reading — Iris is yours to use.
+
 ### What AGPL-3.0 Means for You
 
 | Use Case | Allowed? | Obligation |
 |---|---|---|
-| Personal / internal business use | ✅ Yes | None |
-| Modify & redistribute privately | ✅ Yes | None |
-| Deploy a modified version as a network service | ✅ Yes | Must publish the source of your modified version |
+| Personal / internal business use, any number of machines and users | ✅ Yes | None |
+| Modify it for yourself | ✅ Yes | None |
 | Fork & publish on GitHub | ✅ Yes | Must stay AGPL-3.0 |
-| Integrate into a **closed-source commercial product** | ⚠️ Restricted | Requires a commercial license (see below) |
-| Offer as a **proprietary SaaS** without sharing source | ❌ Not allowed under AGPL | Requires a commercial license |
+| Redistribute it, modified or not, under AGPL-3.0 | ✅ Yes | Must ship the source |
+| Deploy a modified version as a network service | ✅ Yes | Must publish the source of your modified version |
+| Integrate into a **closed-source product** | ⚠️ Restricted | Requires a commercial licence |
+| Offer as a **proprietary SaaS** without sharing source | ❌ Not under AGPL | Requires a commercial licence |
+| **Resell** it, or ship it inside a product you sell | ❌ Not under AGPL | Requires a commercial licence |
+
+The dividing line is one rule: **AGPL-3.0 is free as long as the source stays open.**
 
 ### Commercial Licensing
 
-If you need Iris inside a **proprietary application**, a **closed-source SaaS** or an **enterprise deployment** without the AGPL-3.0 copyleft obligations, a **commercial license** is available. It grants the right to embed the software in closed-source products, run it as a service without disclosing your source, and distribute it commercially without AGPL obligations.
+The commercial licence removes the copyleft obligation, and nothing else. It is for companies embedding Iris in a proprietary product, running a modified version as a service without publishing the source, or reselling it under their own terms.
 
-For commercial licensing enquiries, contact **Marco Lombardo** at [marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com).
+| Licence | Scope | Price |
+|---|---|---|
+| **Community** | Everything Iris does, under AGPL-3.0 | **Free** |
+| **Single Product** | Iris embedded in one proprietary product, one organisation | **€2,500 / year** |
+| **SaaS & Redistribution** | Iris behind a service offered to third parties, or shipped inside a product you sell | **€8,000 / year** |
+| **Perpetual** | Single Product scope, bought once — covers the version current at purchase | **€4,000 one-off** |
+
+List prices, excluding VAT; the final figure is set in the signed agreement. Full terms, scope and what is *not* included are in **[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
+
+For enquiries — including "do we actually need this?", which is often answered with *no* — contact **Marco Lombardo** at [marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com).
 
 ## Disclaimer
 

@@ -286,3 +286,107 @@ def test_smtp_error_descriptions_follow_the_language():
     assert "autenticazione" in mailer.describe_smtp_error(
         smtplib.SMTPAuthenticationError(535, b"nope")
     )
+
+
+# --------------------------------------------------------------------------
+# Pause between messages
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("", 0.0),
+        (None, 0.0),
+        ("0", 0.0),
+        ("2", 2.0),
+        ("1.5", 1.5),
+        ("1,5", 1.5),  # comma as the decimal separator
+        ("  3  ", 3.0),
+        ("abc", -1.0),  # unreadable: reported by validate_settings
+    ],
+)
+def test_parse_delay(value, expected):
+    assert mailer.parse_delay(value) == expected
+
+
+def test_an_unreadable_delay_is_reported():
+    errors = mailer.validate_settings(
+        make_settings(send_delay=mailer.parse_delay("every now and then")), make_template()
+    )
+    assert any("pause" in error.lower() for error in errors)
+
+
+def test_a_valid_delay_passes_validation():
+    assert mailer.validate_settings(make_settings(send_delay=2.0), make_template()) == []
+
+
+def test_the_batch_pauses_between_messages(fake_session):
+    waited = []
+    recipients = [Recipient(f"Company {i}", f"a{i}@example.com") for i in range(3)]
+
+    result = mailer.send_bulk(
+        make_settings(send_delay=1.0), make_template(), recipients, sleep=waited.append
+    )
+
+    assert result.sent_count == 3
+    # Two pauses for three messages: never after the last one.
+    assert round(sum(waited), 3) == 2.0
+
+
+def test_no_pause_without_a_delay(fake_session):
+    waited = []
+    recipients = [Recipient(f"Company {i}", f"a{i}@example.com") for i in range(3)]
+
+    mailer.send_bulk(make_settings(), make_template(), recipients, sleep=waited.append)
+
+    assert waited == []
+
+
+def test_a_single_recipient_is_never_delayed(fake_session):
+    waited = []
+    mailer.send_bulk(
+        make_settings(send_delay=5.0), make_template(), [RECIPIENT], sleep=waited.append
+    )
+    assert waited == []
+
+
+def test_the_pause_reacts_to_a_stop_request(fake_session):
+    """Cancelling must not wait for the whole delay to elapse."""
+    waited = []
+    stopped = {"value": False}
+    recipients = [Recipient(f"Company {i}", f"a{i}@example.com") for i in range(4)]
+
+    def should_stop():
+        # Ask to stop as soon as the first message has gone out.
+        return stopped["value"]
+
+    def sleep(seconds):
+        waited.append(seconds)
+        stopped["value"] = True
+
+    result = mailer.send_bulk(
+        make_settings(send_delay=30.0),
+        make_template(),
+        recipients,
+        should_stop=should_stop,
+        sleep=sleep,
+    )
+
+    assert result.sent_count == 1
+    # A single short step, not the full 30 seconds.
+    assert waited == [0.2]
+
+
+def test_the_delay_is_announced_once(fake_session):
+    messages = []
+    recipients = [Recipient(f"Company {i}", f"a{i}@example.com") for i in range(3)]
+
+    mailer.send_bulk(
+        make_settings(send_delay=1.5),
+        make_template(),
+        recipients,
+        log=messages.append,
+        sleep=lambda seconds: None,
+    )
+
+    announcements = [text for text in messages if "1.5" in text and "Pausing" in text]
+    assert len(announcements) == 1

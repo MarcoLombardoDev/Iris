@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+#
+# Iris - Email Sender
+# Copyright (C) 2026 Marco Lombardo
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version. It is distributed WITHOUT ANY WARRANTY; see the
+# GNU Affero General Public License in LICENSE for details.
+#
+# A commercial licence, without the AGPL obligations, is available for use in
+# proprietary or closed-source products - see COMMERCIAL-LICENSE.md.
 """Graphical interface of Iris - Email Sender.
 
 The application logic (document parsing, message composition and sending,
@@ -13,7 +25,7 @@ import queue
 import sys
 import threading
 import tkinter as tk
-from tkinter import filedialog, messagebox, scrolledtext, ttk
+from tkinter import filedialog, messagebox, scrolledtext, simpledialog, ttk
 
 from iris import config_store, i18n, mailer, msgwriter, paths
 from iris.i18n import t
@@ -65,9 +77,16 @@ class IrisApp:
         self.subject_template = tk.StringVar()
         self.body_template = tk.StringVar()
         self.attachment_path = tk.StringVar()
+        self.send_delay = tk.StringVar(value="0")
+        self.profile_display = tk.StringVar()
+        self.template_display = tk.StringVar()
 
         #: Recipients currently listed.
         self.actions = []
+
+        #: Saved sender profiles and email templates, read from config.ini.
+        self.profiles = []
+        self.templates = []
 
         self.operation_in_progress = False
         self.cancel_requested = False
@@ -88,8 +107,8 @@ class IrisApp:
         self.load_config(apply_to_widgets=False)
 
         self.root.title(f"{APP_TITLE} {__version__}")
-        self.root.geometry("900x750")
-        self.root.minsize(820, 640)
+        self.root.geometry("900x800")
+        self.root.minsize(820, 700)
         self._set_window_icon()
 
         if self.bootstyle_available:
@@ -334,28 +353,41 @@ class IrisApp:
 
     def setup_config_tab(self, parent):
         email_frame = ttk.LabelFrame(parent, text=t("config.sender_frame"))
-        email_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        email_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
+
+        ttk.Label(email_frame, text=t("config.profile")).grid(
+            row=0, column=0, sticky=tk.W, padx=5, pady=3
+        )
+        self.profile_combo = self._build_library_row(
+            email_frame,
+            row=0,
+            variable=self.profile_display,
+            names=self._profile_names(),
+            on_selected=self.on_profile_selected,
+            on_save=self.save_profile_as,
+            on_delete=self.delete_profile,
+        )
 
         ttk.Label(email_frame, text=t("config.email")).grid(
-            row=0, column=0, sticky=tk.W, padx=5, pady=5
+            row=1, column=0, sticky=tk.W, padx=5, pady=3
         )
         self.sender_email_entry = ttk.Entry(email_frame, textvariable=self.sender_email, width=45)
-        self.sender_email_entry.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+        self.sender_email_entry.grid(row=1, column=1, padx=5, pady=3, sticky=tk.W)
 
         ttk.Label(email_frame, text=t("config.server")).grid(
-            row=1, column=0, sticky=tk.W, padx=5, pady=5
+            row=2, column=0, sticky=tk.W, padx=5, pady=3
         )
         self.smtp_server_entry = ttk.Entry(email_frame, textvariable=self.smtp_server, width=45)
-        self.smtp_server_entry.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+        self.smtp_server_entry.grid(row=2, column=1, padx=5, pady=3, sticky=tk.W)
 
         ttk.Label(email_frame, text=t("config.port")).grid(
-            row=2, column=0, sticky=tk.W, padx=5, pady=5
+            row=3, column=0, sticky=tk.W, padx=5, pady=3
         )
         self.smtp_port_entry = ttk.Entry(email_frame, textvariable=self.smtp_port, width=45)
-        self.smtp_port_entry.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
+        self.smtp_port_entry.grid(row=3, column=1, padx=5, pady=3, sticky=tk.W)
 
         ttk.Label(email_frame, text=t("config.connection")).grid(
-            row=3, column=0, sticky=tk.W, padx=5, pady=5
+            row=4, column=0, sticky=tk.W, padx=5, pady=3
         )
         self.connection_labels = {code: t(key) for code, key in CONNECTION_KEYS.items()}
         self.connection_reverse = {label: code for code, label in self.connection_labels.items()}
@@ -366,23 +398,23 @@ class IrisApp:
             state="readonly",
             width=42,
         )
-        self.connection_combo.grid(row=3, column=1, padx=5, pady=5, sticky=tk.W)
+        self.connection_combo.grid(row=4, column=1, padx=5, pady=3, sticky=tk.W)
         self.connection_combo.bind("<<ComboboxSelected>>", self.on_connection_type_change)
         self._set_connection_display(self.connection_type.get())
 
         ttk.Label(email_frame, text=t("config.username")).grid(
-            row=4, column=0, sticky=tk.W, padx=5, pady=5
+            row=5, column=0, sticky=tk.W, padx=5, pady=3
         )
         self.smtp_user_entry = ttk.Entry(email_frame, textvariable=self.smtp_user, width=45)
-        self.smtp_user_entry.grid(row=4, column=1, padx=5, pady=5, sticky=tk.W)
+        self.smtp_user_entry.grid(row=5, column=1, padx=5, pady=3, sticky=tk.W)
 
         ttk.Label(email_frame, text=t("config.password")).grid(
-            row=5, column=0, sticky=tk.W, padx=5, pady=5
+            row=6, column=0, sticky=tk.W, padx=5, pady=3
         )
         self.smtp_password_entry = ttk.Entry(
             email_frame, textvariable=self.smtp_password, width=45, show="*"
         )
-        self.smtp_password_entry.grid(row=5, column=1, padx=5, pady=5, sticky=tk.W)
+        self.smtp_password_entry.grid(row=6, column=1, padx=5, pady=3, sticky=tk.W)
 
         ttk.Label(
             email_frame,
@@ -391,26 +423,25 @@ class IrisApp:
             foreground="#1a5fb4",
             wraplength=520,
             justify="left",
-        ).grid(row=6, column=0, columnspan=2, sticky=tk.W, padx=5, pady=(0, 5))
-
-        ttk.Label(email_frame, text=t("config.language")).grid(
-            row=7, column=0, sticky=tk.W, padx=5, pady=5
-        )
-        self.language_names = {code: name for code, name in i18n.language_choices()}
-        self.language_codes = {name: code for code, name in self.language_names.items()}
-        self.language_combo = ttk.Combobox(
-            email_frame,
-            textvariable=self.language_display,
-            values=list(self.language_names.values()),
-            state="readonly",
-            width=42,
-        )
-        self.language_combo.grid(row=7, column=1, padx=5, pady=5, sticky=tk.W)
-        self.language_combo.bind("<<ComboboxSelected>>", self.on_language_change)
-        self.language_display.set(i18n.language_name(i18n.get_language()))
+        ).grid(row=7, column=0, columnspan=2, sticky=tk.W, padx=5, pady=(0, 5))
 
         template_frame = ttk.LabelFrame(parent, text=t("config.template_frame"))
-        template_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        template_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        library_frame = ttk.Frame(template_frame)
+        library_frame.pack(fill=tk.X, padx=5, pady=5)
+        ttk.Label(library_frame, text=t("config.template"), width=12).pack(
+            side=tk.LEFT, padx=(0, 10)
+        )
+        self.template_combo = self._build_library_row(
+            library_frame,
+            row=None,
+            variable=self.template_display,
+            names=self._template_names(),
+            on_selected=self.on_template_selected,
+            on_save=self.save_template_as,
+            on_delete=self.delete_template,
+        )
 
         subject_frame = ttk.Frame(template_frame)
         subject_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -429,7 +460,7 @@ class IrisApp:
             side=tk.LEFT, padx=(0, 10), anchor=tk.N
         )
         entry_font = ttk.Style(self.root).lookup("TEntry", "font") or "TkDefaultFont"
-        self.body_text = tk.Text(body_frame, height=6, wrap=tk.WORD, font=entry_font, undo=True)
+        self.body_text = tk.Text(body_frame, height=5, wrap=tk.WORD, font=entry_font, undo=True)
         self.body_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         body_scroll = ttk.Scrollbar(body_frame, orient=tk.VERTICAL, command=self.body_text.yview)
         self.body_text.configure(yscrollcommand=body_scroll.set)
@@ -470,6 +501,36 @@ class IrisApp:
         self.body_text.bind("<KeyRelease>", self.update_body_template)
         self.body_text.bind("<FocusOut>", self.update_body_template)
 
+        options_frame = ttk.LabelFrame(parent, text=t("config.options_frame"))
+        options_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        options_row = ttk.Frame(options_frame)
+        options_row.pack(fill=tk.X, padx=5, pady=5)
+
+        ttk.Label(options_row, text=t("config.send_delay")).pack(side=tk.LEFT, padx=(0, 10))
+        self.send_delay_entry = ttk.Entry(options_row, textvariable=self.send_delay, width=8)
+        self.send_delay_entry.pack(side=tk.LEFT)
+        ttk.Label(
+            options_row,
+            text=t("config.send_delay_hint"),
+            font=("Arial", 8),
+            foreground="#666666",
+        ).pack(side=tk.LEFT, padx=(8, 0))
+
+        ttk.Label(options_row, text=t("config.language")).pack(side=tk.LEFT, padx=(30, 10))
+        self.language_names = {code: name for code, name in i18n.language_choices()}
+        self.language_codes = {name: code for code, name in self.language_names.items()}
+        self.language_combo = ttk.Combobox(
+            options_row,
+            textvariable=self.language_display,
+            values=list(self.language_names.values()),
+            state="readonly",
+            width=16,
+        )
+        self.language_combo.pack(side=tk.LEFT)
+        self.language_combo.bind("<<ComboboxSelected>>", self.on_language_change)
+        self.language_display.set(i18n.language_name(i18n.get_language()))
+
         button_frame = ttk.Frame(parent)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
         self.button(button_frame, t("config.save"), self.save_config, style="success").pack(
@@ -478,6 +539,215 @@ class IrisApp:
         self.button(
             button_frame, t("config.test_connection"), self.test_connection, style="info-outline"
         ).pack(side=tk.RIGHT, padx=5)
+
+    def _build_library_row(self, parent, row, variable, names, on_selected, on_save, on_delete):
+        """Build a "saved items" row: combo box, SAVE AS... and DELETE.
+
+        ``row`` places the row in a grid; pass ``None`` when ``parent`` is
+        already a packed row of its own. Returns the combo box.
+        """
+        container = ttk.Frame(parent)
+        if row is None:
+            container.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        else:
+            container.grid(row=row, column=1, padx=5, pady=3, sticky=tk.W)
+
+        combo = ttk.Combobox(
+            container, textvariable=variable, values=names, state="readonly", width=24
+        )
+        combo.pack(side=tk.LEFT)
+        combo.bind("<<ComboboxSelected>>", on_selected)
+        self.button(container, t("config.save_as"), on_save, style="info-outline", width=13).pack(
+            side=tk.LEFT, padx=(6, 0)
+        )
+        self.button(container, t("config.delete"), on_delete, style="danger-outline", width=9).pack(
+            side=tk.LEFT, padx=(6, 0)
+        )
+        return combo
+
+    # ------------------------------------------------------------------
+    # Saved sender profiles and email templates
+    # ------------------------------------------------------------------
+    def _profile_names(self):
+        return [profile.name for profile in self.profiles]
+
+    def _template_names(self):
+        return [template.name for template in self.templates]
+
+    def _find_profile(self, name):
+        wanted = config_store.clean_name(name).lower()
+        return next((item for item in self.profiles if item.name.lower() == wanted), None)
+
+    def _find_template(self, name):
+        wanted = config_store.clean_name(name).lower()
+        return next((item for item in self.templates if item.name.lower() == wanted), None)
+
+    def _refresh_library_choices(self):
+        """Re-publish the saved names into the two combo boxes."""
+        for combo, names in (
+            (getattr(self, "profile_combo", None), self._profile_names()),
+            (getattr(self, "template_combo", None), self._template_names()),
+        ):
+            if combo is None:
+                continue
+            try:
+                combo.config(values=names)
+            except tk.TclError:
+                pass
+
+    def _ask_name(self, title_key, body_key, current):
+        """Ask for a name, returning it cleaned up — or ``None`` to give up."""
+        answer = simpledialog.askstring(
+            t(title_key), t(body_key), parent=self.root, initialvalue=current
+        )
+        if answer is None:
+            return None
+        name = config_store.clean_name(answer)
+        if not name:
+            messagebox.showerror(t("dialog.error"), t("dialog.name_required"))
+            return None
+        return name
+
+    def _library_error(self, key, exc):
+        detail = t(key, error=exc)
+        self.log(detail, level=logging.ERROR)
+        messagebox.showerror(t("dialog.error"), detail)
+
+    def _announce(self, key, name):
+        message = t(key, name=name)
+        self.log(message)
+        self.update_status_bar(message)
+
+    def on_profile_selected(self, event=None):
+        """Copy the selected sender profile into the configuration fields."""
+        profile = self._find_profile(self.profile_display.get())
+        if profile is None:
+            return
+        self.sender_email.set(profile.sender_email)
+        self.smtp_server.set(profile.smtp_server)
+        self.smtp_port.set(profile.smtp_port)
+        self.smtp_user.set(profile.smtp_user)
+        self.smtp_password.set(profile.smtp_password)
+        self._set_connection_display(profile.connection_type)
+        self._announce("log.profile_loaded", profile.name)
+
+    def save_profile_as(self):
+        """Store the sender fields as a named profile."""
+        name = self._ask_name(
+            "dialog.profile_name_title", "dialog.profile_name_body", self.profile_display.get()
+        )
+        if name is None:
+            return
+        if self._find_profile(name) is not None and not messagebox.askyesno(
+            t("dialog.confirm"), t("dialog.profile_overwrite", name=name)
+        ):
+            return
+
+        profile = config_store.SenderProfile(
+            name=name,
+            sender_email=self.sender_email.get().strip(),
+            smtp_server=self.smtp_server.get().strip(),
+            smtp_port=self.smtp_port.get().strip(),
+            smtp_user=self.smtp_user.get(),
+            smtp_password=self.smtp_password.get(),
+            connection_type=self.connection_type.get(),
+        )
+        try:
+            config_store.save_profile(profile)
+        except Exception as exc:
+            self._library_error("log.profile_error", exc)
+            return
+
+        self.profiles = [item for item in self.profiles if item.name.lower() != name.lower()]
+        self.profiles.append(profile)
+        self.profiles.sort(key=lambda item: item.name.lower())
+        self.profile_display.set(name)
+        self._refresh_library_choices()
+        self._announce("log.profile_saved", name)
+
+    def delete_profile(self):
+        """Remove the selected sender profile."""
+        name = config_store.clean_name(self.profile_display.get())
+        if not name or self._find_profile(name) is None:
+            messagebox.showinfo(t("dialog.info"), t("dialog.select_profile"))
+            return
+        if not messagebox.askyesno(
+            t("dialog.confirm"), t("dialog.confirm_delete_profile", name=name)
+        ):
+            return
+        try:
+            config_store.delete_profile(name)
+        except Exception as exc:
+            self._library_error("log.profile_error", exc)
+            return
+
+        self.profiles = [item for item in self.profiles if item.name.lower() != name.lower()]
+        self.profile_display.set("")
+        self._refresh_library_choices()
+        self._announce("log.profile_deleted", name)
+
+    def on_template_selected(self, event=None):
+        """Copy the selected template into the subject, message and attachment."""
+        template = self._find_template(self.template_display.get())
+        if template is None:
+            return
+        self.subject_template.set(template.email_subject)
+        self._set_body_text(template.email_body)
+        self.attachment_path.set(template.attachment_path)
+        self._announce("log.template_loaded", template.name)
+
+    def save_template_as(self):
+        """Store subject, message and attachment as a named template."""
+        name = self._ask_name(
+            "dialog.template_name_title", "dialog.template_name_body", self.template_display.get()
+        )
+        if name is None:
+            return
+        if self._find_template(name) is not None and not messagebox.askyesno(
+            t("dialog.confirm"), t("dialog.template_overwrite", name=name)
+        ):
+            return
+
+        self.update_body_template()
+        template = config_store.MessageTemplate(
+            name=name,
+            email_subject=self.subject_template.get(),
+            email_body=self.body_template.get(),
+            attachment_path=self.attachment_path.get().strip(),
+        )
+        try:
+            config_store.save_template(template)
+        except Exception as exc:
+            self._library_error("log.template_error", exc)
+            return
+
+        self.templates = [item for item in self.templates if item.name.lower() != name.lower()]
+        self.templates.append(template)
+        self.templates.sort(key=lambda item: item.name.lower())
+        self.template_display.set(name)
+        self._refresh_library_choices()
+        self._announce("log.template_saved", name)
+
+    def delete_template(self):
+        """Remove the selected template."""
+        name = config_store.clean_name(self.template_display.get())
+        if not name or self._find_template(name) is None:
+            messagebox.showinfo(t("dialog.info"), t("dialog.select_template"))
+            return
+        if not messagebox.askyesno(
+            t("dialog.confirm"), t("dialog.confirm_delete_template", name=name)
+        ):
+            return
+        try:
+            config_store.delete_template(name)
+        except Exception as exc:
+            self._library_error("log.template_error", exc)
+            return
+
+        self.templates = [item for item in self.templates if item.name.lower() != name.lower()]
+        self.template_display.set("")
+        self._refresh_library_choices()
+        self._announce("log.template_deleted", name)
 
     def setup_actions_tab(self, parent):
         file_frame = ttk.LabelFrame(parent, text=t("actions.file_frame"))
@@ -733,6 +1003,7 @@ class IrisApp:
             connection_type=self.connection_type.get(),
             username=self.smtp_user.get(),
             password=self.smtp_password.get(),
+            send_delay=mailer.parse_delay(self.send_delay.get()),
         )
 
     def current_template(self):
@@ -1106,6 +1377,11 @@ class IrisApp:
             email_body=self.body_template.get(),
             attachment_path=self.attachment_path.get().strip(),
             language=i18n.get_language(),
+            send_delay=self.send_delay.get().strip() or "0",
+            # Saving the whole configuration must not drop the saved
+            # profiles and templates: they live in the same file.
+            profiles=list(self.profiles),
+            templates=list(self.templates),
         )
         try:
             config_path = config_store.save(config)
@@ -1131,6 +1407,9 @@ class IrisApp:
         for message in result.messages:
             self.log(message, level=logging.WARNING)
         self._loaded_config = result if result.found else None
+        self.profiles = list(result.config.profiles)
+        self.templates = list(result.config.templates)
+        self._refresh_library_choices()
 
         if apply_to_widgets:
             self.apply_config_to_widgets()
@@ -1149,6 +1428,7 @@ class IrisApp:
         self.smtp_password.set(config.smtp_password)
         self.attachment_path.set(config.attachment_path)
         self.subject_template.set(config.email_subject)
+        self.send_delay.set(config.send_delay or "0")
         self._set_body_text(config.email_body)
         self._set_connection_display(config.connection_type)
         self.language_display.set(i18n.language_name(i18n.get_language()))

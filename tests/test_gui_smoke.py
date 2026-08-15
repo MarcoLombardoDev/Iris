@@ -362,3 +362,122 @@ def test_failed_connection_test(app):
     app.test_connection()
     assert pump(app, seconds=30.0)
     assert "failed" in app.status_label.cget("text").lower()
+
+
+# --------------------------------------------------------------------------
+# Saved sender profiles and templates
+# --------------------------------------------------------------------------
+def _answer_name_prompt(monkeypatch, answer):
+    """Make the "save as" dialog reply with ``answer`` (None = cancelled)."""
+    from iris import gui
+
+    monkeypatch.setattr(gui.simpledialog, "askstring", lambda *a, **k: answer)
+
+
+def test_saving_and_reloading_a_sender_profile(app, tmp_path, monkeypatch):
+    _configure(app)
+    app.smtp_user.set("user")
+    app.smtp_password.set("s3cret")
+    _answer_name_prompt(monkeypatch, "Work")
+
+    app.save_profile_as()
+
+    assert app._profile_names() == ["Work"]
+    stored = (tmp_path / "config.ini").read_text(encoding="utf-8")
+    assert "[PROFILE:Work]" in stored
+    assert "s3cret" not in stored
+
+    # Overwrite every field, then bring the profile back.
+    app.sender_email.set("other@example.com")
+    app.smtp_server.set("other.example.com")
+    app.smtp_password.set("")
+    app.profile_display.set("Work")
+    app.on_profile_selected()
+
+    assert app.sender_email.get() == "sender@example.com"
+    assert app.smtp_server.get() == "smtp.example.com"
+    assert app.smtp_password.get() == "s3cret"
+
+
+def test_deleting_a_sender_profile(app, tmp_path, monkeypatch):
+    _configure(app)
+    _answer_name_prompt(monkeypatch, "Work")
+    app.save_profile_as()
+
+    app.profile_display.set("Work")
+    app.delete_profile()
+
+    assert app._profile_names() == []
+    assert "[PROFILE:Work]" not in (tmp_path / "config.ini").read_text(encoding="utf-8")
+
+
+def test_saving_and_reloading_a_template(app, monkeypatch):
+    _configure(app)
+    _answer_name_prompt(monkeypatch, "Reminder")
+
+    app.save_template_as()
+    assert app._template_names() == ["Reminder"]
+
+    app.subject_template.set("Something else")
+    app._set_body_text("Another body")
+    app.template_display.set("Reminder")
+    app.on_template_selected()
+
+    assert app.subject_template.get() == "Notice for {COMPANY}"
+    assert app.body_template.get() == "Dear {COMPANY},\ngood morning."
+
+
+def test_a_cancelled_prompt_saves_nothing(app, monkeypatch):
+    _configure(app)
+    _answer_name_prompt(monkeypatch, None)
+
+    app.save_profile_as()
+    app.save_template_as()
+
+    assert app._profile_names() == []
+    assert app._template_names() == []
+
+
+def test_saving_the_configuration_keeps_the_saved_profiles(app, tmp_path, monkeypatch):
+    """Regression: SAVE CONFIGURATION rewrites config.ini in full."""
+    from iris import config_store
+
+    _configure(app)
+    _answer_name_prompt(monkeypatch, "Work")
+    app.save_profile_as()
+
+    app.save_config()
+
+    reloaded = config_store.load(str(tmp_path / "config.ini")).config
+    assert [item.name for item in reloaded.profiles] == ["Work"]
+
+
+def test_profiles_survive_a_language_switch(app, monkeypatch):
+    _configure(app)
+    _answer_name_prompt(monkeypatch, "Work")
+    app.save_profile_as()
+
+    app.language_display.set("Italiano")
+    app.on_language_change()
+
+    assert app._profile_names() == ["Work"]
+    assert list(app.profile_combo.cget("values")) == ["Work"]
+
+
+# --------------------------------------------------------------------------
+# Pause between messages
+# --------------------------------------------------------------------------
+def test_the_pause_is_saved_and_read_back(app, tmp_path):
+    _configure(app)
+    app.send_delay.set("2")
+
+    app.save_config()
+
+    assert "send_delay = 2" in (tmp_path / "config.ini").read_text(encoding="utf-8")
+    assert app.current_settings().send_delay == 2.0
+
+
+def test_an_unreadable_pause_blocks_the_send(app):
+    _configure(app)
+    app.send_delay.set("now and then")
+    assert app.validate_email_config() is False

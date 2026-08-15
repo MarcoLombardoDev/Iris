@@ -2,6 +2,52 @@
 
 All notable changes to this project, most recent first.
 
+## [2.1.0] - 2026-08-15
+
+Everything a batch sender kept asking for, all of it in the free build. This
+release adds no paid tier, no feature gate and no licence key: the commercial
+licence covers redistribution rights, never features.
+
+### Added
+- **Sender profiles.** Several SMTP configurations — a work account, an
+  internal relay, a client's server — can be saved under a name and recalled
+  from a drop-down in the Configuration tab. `SAVE AS...` stores the fields on
+  screen, `DELETE` removes the entry; selecting one copies it into the form,
+  where it can still be edited before sending.
+- **Template library.** Subject, message and attachment save and recall the
+  same way, so switching between an annual notice and a payment reminder no
+  longer means retyping the body.
+- Both live in `config.ini`, one `[PROFILE:name]` / `[TEMPLATE:name]` section
+  per entry, alongside the `[EMAIL]` section that still holds the settings in
+  use. Saving an entry rewrites only that entry, leaving fields being edited
+  elsewhere untouched. Profile passwords are obfuscated like the main one.
+- New `config_store` API: `SenderProfile`, `MessageTemplate`, `save_profile()`,
+  `delete_profile()`, `save_template()`, `delete_template()` and `clean_name()`.
+- **Configurable pause between messages** (`send_delay`), for providers that
+  rate limit a sender. Decimals are accepted, the pause never follows the last
+  message of a batch, and it is interruptible — cancelling does not wait for
+  the remaining seconds to elapse.
+- `mailer.parse_delay()`, a `send_delay` field on `SmtpSettings`, and a `sleep`
+  injection point on `send_bulk()` so the pause is testable without waiting.
+- **AGPL-3.0 notice header** on every source file, as the licence itself
+  recommends, each pointing at the commercial alternative.
+- **`COMMERCIAL-LICENSE.md`** — scope of the commercial licence, what it does
+  and does not include, and the price list. The README license section now
+  carries the same list instead of only an email address.
+- Commented profile and template examples in `config.ini.example`.
+
+### Changed
+- The Configuration tab is reorganised: the sender profile selector opens the
+  SENDER frame, the template selector opens the EMAIL TEMPLATE frame, and a new
+  OPTIONS frame collects the pause and the language selector (which used to sit
+  among the sender fields, where it never belonged).
+- The default window is 900x800 (was 900x750) to fit the reorganised tab.
+- Test suite grown from 129 to 170 tests.
+
+### Compatibility
+- A `config.ini` written by 2.0.x loads unchanged: the new keys default to
+  empty libraries and no pause, and files without them keep working.
+
 ## [2.0.0] - 2026-08-11
 
 First public release, under the new name **Iris**. The application was

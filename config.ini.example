@@ -40,3 +40,41 @@ email_body = Dear {COMPANY},
 
 ; Optional attachment sent to every recipient (full path)
 attachment_path =
+
+; Seconds to wait between one message and the next; 0 sends without pausing.
+; A small pause keeps providers that rate limit a sender happy.
+send_delay = 0
+
+; ---------------------------------------------------------------------------
+; Saved sender profiles and templates (optional)
+;
+; One section per saved entry, named after it. They are normally written by
+; the SAVE AS... buttons in the CONFIGURATION tab rather than by hand.
+; Selecting one in the application copies it into the fields above.
+;
+; NOTE: every profile keeps its own password, obfuscated exactly like the one
+; above — which is to say NOT encrypted. A file holding several accounts is
+; that much more sensitive.
+; ---------------------------------------------------------------------------
+
+;[PROFILE:Customer Office]
+;sender_email = notices@example.com
+;smtp_server = smtp.example.com
+;smtp_port = 587
+;connection_type = starttls
+;smtp_user = notices@example.com
+;smtp_password =
+
+;[PROFILE:Internal relay]
+;sender_email = no-reply@example.com
+;smtp_server = relay.internal.example
+;smtp_port = 25
+;connection_type = none
+;smtp_user =
+;smtp_password =
+
+;[TEMPLATE:Annual notice]
+;email_subject = Annual notice for {COMPANY}
+;email_body = Dear {COMPANY},
+;	please find attached the annual notice.
+;attachment_path =

@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+#
+# Iris - Email Sender
+# Copyright (C) 2026 Marco Lombardo
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version. It is distributed WITHOUT ANY WARRANTY; see the
+# GNU Affero General Public License in LICENSE for details.
+#
+# A commercial licence, without the AGPL obligations, is available for use in
+# proprietary or closed-source products - see COMMERCIAL-LICENSE.md.
 """Reading and writing ``config.ini``.
 
 The file is looked up in several locations so that configurations written by
@@ -9,7 +21,7 @@ executable lives in a read-only folder.
 import base64
 import configparser
 import os
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from typing import List, Optional
 
 from . import paths
@@ -18,6 +30,16 @@ from .i18n import DEFAULT_LANGUAGE, normalize_language, set_language, t
 CONFIG_FILENAME = "config.ini"
 SECTION = "EMAIL"
 
+#: Prefix of the sections holding a saved sender profile / email template.
+#: Keeping them in their own sections leaves ``[EMAIL]`` — the settings
+#: currently in use — exactly as earlier versions wrote it.
+PROFILE_PREFIX = "PROFILE:"
+TEMPLATE_PREFIX = "TEMPLATE:"
+
+#: Characters that cannot appear in a profile or template name: they would
+#: break the ``[SECTION]`` header the name is stored in.
+_FORBIDDEN_NAME_CHARS = "[]"
+
 #: Prefix used for obfuscated passwords.
 #: WARNING: this is obfuscation, not encryption. It only prevents the password
 #: from being readable at a glance; ``config.ini`` must still be protected
@@ -25,6 +47,42 @@ SECTION = "EMAIL"
 _OBFUSCATION_PREFIX = "b64:"
 
 _ENCODINGS = ("utf-8", "utf-8-sig", "windows-1252", "iso-8859-1", "cp1252")
+
+
+def clean_name(value: str) -> str:
+    """Return a profile/template name usable as a section header.
+
+    Whitespace is collapsed (a newline would split the header in two) and the
+    square brackets are dropped. An unusable name comes back empty, which the
+    callers treat as "refuse to save".
+    """
+    name = " ".join(str(value or "").split())
+    for char in _FORBIDDEN_NAME_CHARS:
+        name = name.replace(char, "")
+    return name.strip()
+
+
+@dataclass
+class SenderProfile:
+    """A named set of sender and SMTP settings."""
+
+    name: str = ""
+    sender_email: str = ""
+    smtp_server: str = ""
+    smtp_port: str = ""
+    smtp_user: str = ""
+    smtp_password: str = ""
+    connection_type: str = "starttls"
+
+
+@dataclass
+class MessageTemplate:
+    """A named subject/body/attachment set."""
+
+    name: str = ""
+    email_subject: str = ""
+    email_body: str = ""
+    attachment_path: str = ""
 
 
 @dataclass
@@ -41,9 +99,38 @@ class AppConfig:
     email_body: str = ""
     attachment_path: str = ""
     language: str = DEFAULT_LANGUAGE
+    send_delay: str = "0"
+    profiles: List[SenderProfile] = field(default_factory=list)
+    templates: List[MessageTemplate] = field(default_factory=list)
 
     def as_dict(self) -> dict:
         return asdict(self)
+
+    def profile(self, name: str) -> Optional[SenderProfile]:
+        """Return the saved profile called ``name`` (case-insensitive)."""
+        wanted = clean_name(name).lower()
+        return next((item for item in self.profiles if item.name.lower() == wanted), None)
+
+    def template(self, name: str) -> Optional[MessageTemplate]:
+        """Return the saved template called ``name`` (case-insensitive)."""
+        wanted = clean_name(name).lower()
+        return next((item for item in self.templates if item.name.lower() == wanted), None)
+
+
+#: Fields of :class:`AppConfig` stored as plain keys in ``[EMAIL]``.
+_SCALAR_FIELDS = (
+    "sender_email",
+    "smtp_server",
+    "smtp_port",
+    "smtp_user",
+    "smtp_password",
+    "connection_type",
+    "email_subject",
+    "email_body",
+    "attachment_path",
+    "language",
+    "send_delay",
+)
 
 
 @dataclass
@@ -98,6 +185,51 @@ def default_save_path() -> str:
             if paths.is_writable_dir(directory):
                 return candidate
     return os.path.join(paths.writable_app_dir(), CONFIG_FILENAME)
+
+
+def _read_profiles(parser: configparser.ConfigParser) -> List[SenderProfile]:
+    """Read every ``[PROFILE:name]`` section, sorted by name."""
+    profiles = []
+    for header in parser.sections():
+        if not header.startswith(PROFILE_PREFIX):
+            continue
+        name = clean_name(header[len(PROFILE_PREFIX):])
+        if not name:
+            continue
+        section = parser[header]
+        profiles.append(
+            SenderProfile(
+                name=name,
+                sender_email=section.get("sender_email", ""),
+                smtp_server=section.get("smtp_server", ""),
+                smtp_port=section.get("smtp_port", ""),
+                smtp_user=section.get("smtp_user", ""),
+                smtp_password=deobfuscate(section.get("smtp_password", "")),
+                connection_type=section.get("connection_type", "starttls").strip().lower(),
+            )
+        )
+    return sorted(profiles, key=lambda item: item.name.lower())
+
+
+def _read_templates(parser: configparser.ConfigParser) -> List[MessageTemplate]:
+    """Read every ``[TEMPLATE:name]`` section, sorted by name."""
+    templates = []
+    for header in parser.sections():
+        if not header.startswith(TEMPLATE_PREFIX):
+            continue
+        name = clean_name(header[len(TEMPLATE_PREFIX):])
+        if not name:
+            continue
+        section = parser[header]
+        templates.append(
+            MessageTemplate(
+                name=name,
+                email_subject=section.get("email_subject", ""),
+                email_body=section.get("email_body", ""),
+                attachment_path=section.get("attachment_path", ""),
+            )
+        )
+    return sorted(templates, key=lambda item: item.name.lower())
 
 
 def load(path: Optional[str] = None, apply_language: bool = True) -> LoadResult:
@@ -161,6 +293,9 @@ def load(path: Optional[str] = None, apply_language: bool = True) -> LoadResult:
         email_body=section.get("email_body", ""),
         attachment_path=section.get("attachment_path", ""),
         language=language,
+        send_delay=section.get("send_delay", "0"),
+        profiles=_read_profiles(parser),
+        templates=_read_templates(parser),
     )
     return result
 
@@ -172,10 +307,33 @@ def save(config: AppConfig, path: Optional[str] = None) -> str:
     os.makedirs(directory, exist_ok=True)
 
     parser = configparser.ConfigParser(interpolation=None)
-    values = config.as_dict()
+    values = {name: getattr(config, name) for name in _SCALAR_FIELDS}
     values["smtp_password"] = obfuscate(config.smtp_password)
     values["language"] = normalize_language(config.language)
     parser[SECTION] = values
+
+    for profile in sorted(config.profiles, key=lambda item: item.name.lower()):
+        name = clean_name(profile.name)
+        if not name:
+            continue
+        parser[PROFILE_PREFIX + name] = {
+            "sender_email": profile.sender_email,
+            "smtp_server": profile.smtp_server,
+            "smtp_port": profile.smtp_port,
+            "smtp_user": profile.smtp_user,
+            "smtp_password": obfuscate(profile.smtp_password),
+            "connection_type": profile.connection_type,
+        }
+
+    for template in sorted(config.templates, key=lambda item: item.name.lower()):
+        name = clean_name(template.name)
+        if not name:
+            continue
+        parser[TEMPLATE_PREFIX + name] = {
+            "email_subject": template.email_subject,
+            "email_body": template.email_body,
+            "attachment_path": template.attachment_path,
+        }
 
     with open(config_path, "w", encoding="utf-8") as handle:
         parser.write(handle)
@@ -201,4 +359,54 @@ def update_language(language: str, path: Optional[str] = None) -> str:
     existing = load(config_path, apply_language=False)
     config = existing.config
     config.language = normalize_language(language)
+    return save(config, config_path)
+
+
+# ---------------------------------------------------------------------------
+# Saved profiles and templates
+# ---------------------------------------------------------------------------
+# Like update_language, these touch one entry and leave everything else in the
+# file untouched: the user may well be editing other fields at the same time.
+def _reload_for_edit(path: Optional[str]) -> "tuple[str, AppConfig]":
+    config_path = path or default_save_path()
+    return config_path, load(config_path, apply_language=False).config
+
+
+def save_profile(profile: SenderProfile, path: Optional[str] = None) -> str:
+    """Add or replace a sender profile, keeping the rest of the file intact."""
+    name = clean_name(profile.name)
+    if not name:
+        raise ValueError(t("validate.name_required"))
+
+    config_path, config = _reload_for_edit(path)
+    config.profiles = [item for item in config.profiles if item.name.lower() != name.lower()]
+    config.profiles.append(replace(profile, name=name))
+    return save(config, config_path)
+
+
+def delete_profile(name: str, path: Optional[str] = None) -> str:
+    """Remove a sender profile; unknown names are a no-op."""
+    wanted = clean_name(name).lower()
+    config_path, config = _reload_for_edit(path)
+    config.profiles = [item for item in config.profiles if item.name.lower() != wanted]
+    return save(config, config_path)
+
+
+def save_template(template: MessageTemplate, path: Optional[str] = None) -> str:
+    """Add or replace an email template, keeping the rest of the file intact."""
+    name = clean_name(template.name)
+    if not name:
+        raise ValueError(t("validate.name_required"))
+
+    config_path, config = _reload_for_edit(path)
+    config.templates = [item for item in config.templates if item.name.lower() != name.lower()]
+    config.templates.append(replace(template, name=name))
+    return save(config, config_path)
+
+
+def delete_template(name: str, path: Optional[str] = None) -> str:
+    """Remove an email template; unknown names are a no-op."""
+    wanted = clean_name(name).lower()
+    config_path, config = _reload_for_edit(path)
+    config.templates = [item for item in config.templates if item.name.lower() != wanted]
     return save(config, config_path)

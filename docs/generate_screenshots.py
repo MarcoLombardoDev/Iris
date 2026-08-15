@@ -61,6 +61,37 @@ SAMPLE_CONFIG = config_store.AppConfig(
     ),
     attachment_path="",
     language=LANGUAGE,
+    send_delay="1",
+    profiles=[
+        config_store.SenderProfile(
+            name="Customer Office",
+            sender_email="notices@example.com",
+            smtp_server="smtp.example.com",
+            smtp_port="587",
+            smtp_user="notices@example.com",
+            smtp_password="not-a-real-password",
+            connection_type="starttls",
+        ),
+        config_store.SenderProfile(
+            name="Internal relay",
+            sender_email="no-reply@example.com",
+            smtp_server="relay.internal.example",
+            smtp_port="25",
+            connection_type="none",
+        ),
+    ],
+    templates=[
+        config_store.MessageTemplate(
+            name="Annual notice",
+            email_subject="Annual notice for {COMPANY}",
+            email_body="Dear {COMPANY},\n\nplease find attached the annual notice.",
+        ),
+        config_store.MessageTemplate(
+            name="Payment reminder",
+            email_subject="Payment reminder — {COMPANY}",
+            email_body="Dear {COMPANY},\n\nour records show an outstanding invoice.",
+        ),
+    ],
 )
 
 SAMPLE_LOG = [
@@ -112,6 +143,14 @@ def main():
     app._loaded_config = config_store.LoadResult(config=SAMPLE_CONFIG, path="config.ini",
                                                  encoding="utf-8")
     app.apply_config_to_widgets()
+
+    # The saved libraries normally arrive through load_config().
+    app.profiles = list(SAMPLE_CONFIG.profiles)
+    app.templates = list(SAMPLE_CONFIG.templates)
+    app._refresh_library_choices()
+    app.profile_display.set(SAMPLE_CONFIG.profiles[0].name)
+    app.template_display.set(SAMPLE_CONFIG.templates[0].name)
+
     app._update_actions_list(SAMPLE_RECIPIENTS)
 
     app.log_text.config(state="normal")

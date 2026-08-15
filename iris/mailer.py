@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+#
+# Iris - Email Sender
+# Copyright (C) 2026 Marco Lombardo
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version. It is distributed WITHOUT ANY WARRANTY; see the
+# GNU Affero General Public License in LICENSE for details.
+#
+# A commercial licence, without the AGPL obligations, is available for use in
+# proprietary or closed-source products - see COMMERCIAL-LICENSE.md.
 """Message composition and SMTP delivery.
 
 Like the rest of the package this module is independent from Tkinter, so the
@@ -9,6 +21,7 @@ import mimetypes
 import os
 import smtplib
 import socket
+import time
 from dataclasses import dataclass, field
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
@@ -47,6 +60,10 @@ class SmtpSettings:
     username: str = ""
     password: str = ""
     timeout: int = DEFAULT_TIMEOUT
+    #: Seconds to wait between one message and the next. Providers that rate
+    #: limit a sender are much happier with a small pause than with a burst.
+    #: A negative value marks input that could not be read as a number.
+    send_delay: float = 0.0
 
     @property
     def use_auth(self) -> bool:
@@ -103,6 +120,9 @@ def validate_settings(settings: SmtpSettings, template: EmailTemplate) -> List[s
     if bool(username) != bool(password):
         errors.append(t("validate.credentials"))
 
+    if settings.send_delay < 0:
+        errors.append(t("validate.delay_invalid"))
+
     if not template.subject.strip():
         errors.append(t("validate.subject_missing"))
 
@@ -122,6 +142,27 @@ def parse_port(value, default: int = 0) -> int:
         return int(str(value).strip())
     except (TypeError, ValueError):
         return default
+
+
+def parse_delay(value) -> float:
+    """Convert the pause between messages to seconds, without raising.
+
+    An empty field means "no pause"; text that is not a number comes back as
+    ``-1.0`` so :func:`validate_settings` can report it instead of silently
+    sending a batch at full speed.
+    """
+    text = str(value if value is not None else "").strip().replace(",", ".")
+    if not text:
+        return 0.0
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return -1.0
+
+
+def format_delay(seconds: float) -> str:
+    """Format a delay for the log: ``1.0`` becomes ``1``, ``0.5`` stays ``0.5``."""
+    return f"{seconds:g}"
 
 
 def attach_file(message: EmailMessage, path: str) -> None:
@@ -331,6 +372,25 @@ class BulkResult:
         return len(self.failed)
 
 
+def _pause(
+    seconds: float,
+    should_stop: Optional[Callable[[], bool]],
+    sleep: Callable[[float], None],
+) -> None:
+    """Wait ``seconds`` in short steps, so a cancel request is honoured at once.
+
+    Sleeping the whole delay in one call would leave the user waiting for it to
+    elapse before the batch reacts to ``Stop``.
+    """
+    remaining = seconds
+    while remaining > 0:
+        if should_stop and should_stop():
+            return
+        step = min(0.2, remaining)
+        sleep(step)
+        remaining -= step
+
+
 def send_bulk(
     settings: SmtpSettings,
     template: EmailTemplate,
@@ -338,18 +398,24 @@ def send_bulk(
     log: Logger = None,
     on_result: Optional[Callable[[Recipient, bool, str], None]] = None,
     should_stop: Optional[Callable[[], bool]] = None,
+    sleep: Callable[[float], None] = time.sleep,
 ) -> BulkResult:
     """Send the message to every recipient reusing a single connection.
 
     ``on_result`` is called for each recipient with
     ``(recipient, success, message)``; ``should_stop`` allows the caller to
-    interrupt the running batch.
+    interrupt the running batch. When ``settings.send_delay`` is set, the
+    batch pauses for that many seconds between one message and the next.
     """
     log = log or (lambda message: None)
     result = BulkResult()
+    delay = max(0.0, settings.send_delay)
+    last_index = len(recipients) - 1
+    if delay and last_index > 0:
+        log(t("mailer.delay_active", seconds=format_delay(delay)))
 
     with SmtpSession(settings, log=log) as session:
-        for recipient in recipients:
+        for index, recipient in enumerate(recipients):
             if should_stop and should_stop():
                 log(t("mailer.stopped"))
                 break
@@ -384,4 +450,9 @@ def send_bulk(
                     for remaining in recipients[processed:]:
                         result.failed.append((remaining, t("mailer.not_attempted")))
                     break
+
+            # Reached after a delivery and after a recoverable failure alike —
+            # the abort path above leaves the loop before getting here.
+            if delay and index < last_index:
+                _pause(delay, should_stop, sleep)
     return result

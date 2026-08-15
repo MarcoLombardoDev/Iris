@@ -189,3 +189,153 @@ def test_load_can_leave_the_language_untouched(tmp_path):
 
     assert result.config.language == "it"
     assert i18n.get_language() == "en"
+
+
+# --------------------------------------------------------------------------
+# Sender profiles and email templates
+# --------------------------------------------------------------------------
+def test_profiles_and_templates_round_trip(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config = make_config(
+        profiles=[
+            config_store.SenderProfile(
+                name="Work",
+                sender_email="work@example.com",
+                smtp_server="smtp.work.example",
+                smtp_port="587",
+                smtp_user="user",
+                smtp_password="p4ss",
+                connection_type="starttls",
+            )
+        ],
+        templates=[
+            config_store.MessageTemplate(
+                name="Reminder", email_subject="Hello {COMPANY}", email_body="Body text"
+            )
+        ],
+    )
+    config_store.save(config, path)
+    reloaded = config_store.load(path).config
+
+    assert [item.name for item in reloaded.profiles] == ["Work"]
+    assert reloaded.profiles[0].smtp_server == "smtp.work.example"
+    assert reloaded.profiles[0].smtp_password == "p4ss"
+    assert [item.name for item in reloaded.templates] == ["Reminder"]
+    assert reloaded.templates[0].email_subject == "Hello {COMPANY}"
+
+
+def test_a_profile_password_is_not_stored_in_clear(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config_store.save_profile(
+        config_store.SenderProfile(name="Work", smtp_password="topsecret"), path
+    )
+    assert "topsecret" not in (tmp_path / "config.ini").read_text(encoding="utf-8")
+    assert config_store.load(path).config.profile("Work").smtp_password == "topsecret"
+
+
+def test_saving_a_profile_keeps_the_other_values(tmp_path):
+    """Adding a profile must not disturb the settings being edited."""
+    path = str(tmp_path / "config.ini")
+    config_store.save(make_config(), path)
+
+    config_store.save_profile(config_store.SenderProfile(name="Work"), path)
+
+    reloaded = config_store.load(path).config
+    assert reloaded.sender_email == "sender@example.com"
+    assert reloaded.smtp_password == "s3cret"
+    assert reloaded.email_body == make_config().email_body
+    assert reloaded.profile("Work") is not None
+
+
+def test_saving_the_same_name_replaces_the_entry(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config_store.save_profile(config_store.SenderProfile(name="Work", smtp_server="first"), path)
+    config_store.save_profile(config_store.SenderProfile(name="work", smtp_server="second"), path)
+
+    profiles = config_store.load(path).config.profiles
+    assert len(profiles) == 1
+    assert profiles[0].smtp_server == "second"
+
+
+def test_delete_profile(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config_store.save_profile(config_store.SenderProfile(name="Work"), path)
+    config_store.delete_profile("Work", path)
+    assert config_store.load(path).config.profiles == []
+
+
+def test_deleting_an_unknown_profile_is_harmless(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config_store.save_profile(config_store.SenderProfile(name="Work"), path)
+    config_store.delete_profile("Missing", path)
+    assert len(config_store.load(path).config.profiles) == 1
+
+
+def test_templates_and_profiles_do_not_collide(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config_store.save_profile(config_store.SenderProfile(name="Work"), path)
+    config_store.save_template(
+        config_store.MessageTemplate(name="Work", email_subject="Subject"), path
+    )
+
+    config_store.delete_template("Work", path)
+
+    config = config_store.load(path).config
+    assert config.profile("Work") is not None
+    assert config.templates == []
+
+
+def test_profiles_come_back_sorted(tmp_path):
+    path = str(tmp_path / "config.ini")
+    for name in ("Zulu", "alpha", "Mike"):
+        config_store.save_profile(config_store.SenderProfile(name=name), path)
+    names = [item.name for item in config_store.load(path).config.profiles]
+    assert names == ["alpha", "Mike", "Zulu"]
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("  Work  ", "Work"),
+        ("Multi   space", "Multi space"),
+        ("With[brackets]", "Withbrackets"),
+        ("line\nbreak", "line break"),
+        ("   ", ""),
+        ("", ""),
+    ],
+)
+def test_clean_name(value, expected):
+    assert config_store.clean_name(value) == expected
+
+
+def test_a_nameless_entry_is_refused(tmp_path):
+    path = str(tmp_path / "config.ini")
+    with pytest.raises(ValueError):
+        config_store.save_profile(config_store.SenderProfile(name="  "), path)
+    with pytest.raises(ValueError):
+        config_store.save_template(config_store.MessageTemplate(name="[]"), path)
+
+
+def test_a_name_with_brackets_is_stored_readable(tmp_path):
+    """The name ends up in a section header, which brackets would break."""
+    path = str(tmp_path / "config.ini")
+    config_store.save_profile(config_store.SenderProfile(name="Acme [IT]"), path)
+    assert [item.name for item in config_store.load(path).config.profiles] == ["Acme IT"]
+
+
+# --------------------------------------------------------------------------
+# Pause between messages
+# --------------------------------------------------------------------------
+def test_send_delay_round_trip(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config_store.save(make_config(send_delay="2.5"), path)
+    assert config_store.load(path).config.send_delay == "2.5"
+
+
+def test_a_pre_2_1_file_loads_with_empty_libraries(tmp_path):
+    path = tmp_path / "config.ini"
+    path.write_text("[EMAIL]\nsender_email = sender@example.com\n", encoding="utf-8")
+    config = config_store.load(str(path)).config
+    assert config.profiles == []
+    assert config.templates == []
+    assert config.send_delay == "0"
