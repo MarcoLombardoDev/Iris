@@ -1,7 +1,7 @@
 # Iris — Email Sender
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Commercial License Available](https://img.shields.io/badge/Commercial%20License-Available-green.svg)](#license--commercial-licensing)
+[![Commercial Licence Available](https://img.shields.io/badge/Commercial%20Licence-Available-green.svg)](COMMERCIAL-LICENSE.md)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-174%20passing-brightgreen.svg)](#testing)
 
@@ -411,18 +411,21 @@ Practical expectations:
 
 ## License & Commercial Licensing
 
-Iris is open-source software released under the **[GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE)**.
+Iris is open-source software released under the
+**[GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE)**.
 
 Copyright © 2026 Marco Lombardo.
 
-**The free build is the whole product.** Every feature documented above is in it. There is no paid edition, no feature gate, no licence key, no seat limit and no telemetry. If AGPL-3.0 works for you, you are done reading — Iris is yours to use.
+**The free build is the whole product.** Every feature documented above is in it. There is
+no paid edition, no feature gate, no licence key, no seat limit and no phone-home. If
+AGPL-3.0 works for you, you are done reading — Iris is yours to use.
 
 ### What AGPL-3.0 Means for You
 
 | Use Case | Allowed? | Obligation |
 |---|---|---|
-| Personal / internal business use, any number of machines and users | ✅ Yes | None |
-| Modify it for yourself | ✅ Yes | None |
+| Internal use, any number of machines and users | ✅ Yes | None |
+| Modify it and keep the changes to yourself | ✅ Yes | None |
 | Fork & publish on GitHub | ✅ Yes | Must stay AGPL-3.0 |
 | Redistribute it, modified or not, under AGPL-3.0 | ✅ Yes | Must ship the source |
 | Deploy a modified version as a network service | ✅ Yes | Must publish the source of your modified version |
@@ -432,26 +435,51 @@ Copyright © 2026 Marco Lombardo.
 
 The dividing line is one rule: **AGPL-3.0 is free as long as the source stays open.**
 
+
 ### Commercial Licensing
 
-The commercial licence removes the copyleft obligation, and nothing else. It is for companies embedding Iris in a proprietary product, running a modified version as a service without publishing the source, or reselling it under their own terms.
+The commercial licence removes the copyleft obligation, and nothing else. It is for
+organisations embedding Iris in a proprietary product, running a modified version as a
+service without publishing the source, reselling it under their own terms — or simply
+barred by internal policy from using AGPL code.
 
-| Licence | Scope | Price |
-|---|---|---|
-| **Community** | Everything Iris does, under AGPL-3.0 | **Free** |
-| **Single Product** | Iris embedded in one proprietary product, one organisation | **€2,500 / year** |
-| **SaaS & Redistribution** | Iris behind a service offered to third parties, or shipped inside a product you sell | **€4,000 / year** |
-| **Perpetual** | Single Product scope, bought once — covers the version current at purchase | **€8,000 one-off** |
+| Tier | Price | Scope |
+|---|---:|---|
+| **Community** | **Free** | Everything Iris does, under AGPL-3.0. Unlimited internal use. |
+| **Internal** | **€2,500 / year** | Closed-source internal use, one legal entity. No redistribution. |
+| **OEM / Redistribution** | **€4,000 / year** | Embed it in a product you sell, or run it as a hosted service. |
+| **Enterprise** | **from €9,000 / year** | Group-wide, unlimited products, procurement and legal questionnaires answered. |
+| **Perpetual** | **€8,000** / **from €12,000** one-off | Internal or OEM scope, bought once, for the major version current at purchase. |
 
-List prices, excluding VAT; the final figure is set in the signed agreement. Full terms, scope and what is *not* included are in **[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
+The same commitments apply at every paid tier:
+
+- **Email support is always included** — 5 business days at Internal, 3 at OEM, 2 at
+  Enterprise. It is never sold separately to a paying customer.
+- **Custom development is never included**, at any tier. It is available on request and
+  **quoted separately**, per project, at a fixed price agreed before work starts
+  (indicative day rate: **€600 / day**).
+- **Perpetual fallback, no retroactive price rise, cancel any time.** Versions released
+  during your term stay licensed to you forever.
+- **50% off** for organisations under 10 employees and €1M revenue. **Free** commercial
+  licences for non-profits, academia and published research — ask.
+
+Prices are per organisation, excluding VAT. **Seats are never counted.** Full terms, what is
+*not* included, and the third-party component review:
+**[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
+
+> ⚠️ **PDF support depends on PyMuPDF, which is itself AGPL-3.0** (dual-licensed by Artifex). A commercial Iris licence cannot relicense it: shipping PDF support in a closed-source product needs a commercial PyMuPDF licence too, or a build without the PDF reader. Details and both ways round it are in [§9](COMMERCIAL-LICENSE.md#9-third-party-components).
 
 ### How to get in touch
 
-Everything commercial — buying a licence, asking for a quote, or checking whether you need one at all (the answer is often *no*) — goes to one address:
+Everything commercial — buying a licence, asking for a quote, commissioning custom
+development, or checking whether you need a licence at all (the answer is often *no*) —
+goes to one address:
 
-> **[marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com)** — Marco Lombardo
+> **[marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com?subject=Iris%20commercial%20licence%20enquiry)** — Marco Lombardo
 
-The same address is shown in the application's footer, and clicking it opens your mail client on a pre-filled enquiry. Please keep **GitHub Issues for bugs and feature requests**, not for licensing.
+The same address is shown in the application's footer, and clicking it opens your mail
+client on a pre-filled enquiry. Please keep **GitHub Issues for bugs and feature
+requests**, not for licensing.
 
 ## Disclaimer
 

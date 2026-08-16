@@ -2,6 +2,28 @@
 
 All notable changes to this project, most recent first.
 
+## [Unreleased]
+
+### Changed
+- **The commercial offer is now identical across Iris, Argus and Proteus**, with only
+  the price list, the scope wording and the third-party review differing per product.
+  Same document (`COMMERCIAL-LICENSE.md`), same eleven sections, same tier ladder —
+  Community / Internal / OEM / Enterprise, plus a perpetual option on Internal or OEM
+  scope — and the same commitments at every paid tier:
+  - **email support always included** (5 / 3 / 2 business days by tier), never sold
+    separately to a paying customer;
+  - **custom development never included and always quoted separately**, per project, at
+    a fixed price agreed before work starts;
+  - email as the only commercial channel, GitHub Issues for bugs and features;
+  - perpetual fallback, no retroactive price rise, cancel any time, no licence key;
+  - 50% off under 10 employees and €1M revenue; free licences for non-profits,
+    academia and published research.
+- README licensing section, badge and CLA contact line aligned to the same wording.
+- Documented that PDF support depends on **PyMuPDF, itself AGPL-3.0**: a commercial
+  Iris licence cannot relicense it, so a closed-source product shipping PDF support
+  needs a commercial PyMuPDF licence from Artifex, or a build without the PDF reader.
+
+
 ## [2.1.0] - 2026-08-15
 
 Everything a batch sender kept asking for, all of it in the free build. This
