@@ -440,8 +440,8 @@ The commercial licence removes the copyleft obligation, and nothing else. It is 
 |---|---|---|
 | **Community** | Everything Iris does, under AGPL-3.0 | **Free** |
 | **Single Product** | Iris embedded in one proprietary product, one organisation | **€2,500 / year** |
-| **SaaS & Redistribution** | Iris behind a service offered to third parties, or shipped inside a product you sell | **€8,000 / year** |
-| **Perpetual** | Single Product scope, bought once — covers the version current at purchase | **€4,000 one-off** |
+| **SaaS & Redistribution** | Iris behind a service offered to third parties, or shipped inside a product you sell | **€4,000 / year** |
+| **Perpetual** | Single Product scope, bought once — covers the version current at purchase | **€8,000 one-off** |
 
 List prices, excluding VAT; the final figure is set in the signed agreement. Full terms, scope and what is *not* included are in **[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
 

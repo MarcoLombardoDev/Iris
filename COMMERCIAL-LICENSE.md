@@ -51,8 +51,8 @@ Prices in EUR, excluding VAT and any applicable withholding. They are **list pri
 |---|---|---|
 | **Community** | Everything Iris does, under AGPL-3.0 | **Free** |
 | **Single Product** | Iris embedded in **one** proprietary product or internal closed-source system, one organisation | **€2,500 / year** |
-| **SaaS & Redistribution** | Iris behind a service you offer to third parties, or shipped inside a product you sell | **€8,000 / year** |
-| **Perpetual** | Single Product scope, bought once instead of annually — covers the version current at purchase | **€4,000 one-off** |
+| **SaaS & Redistribution** | Iris behind a service you offer to third parties, or shipped inside a product you sell | **€4,000 / year** |
+| **Perpetual** | Single Product scope, bought once instead of annually — covers the version current at purchase | **€8,000 one-off** |
 
 Notes:
 
