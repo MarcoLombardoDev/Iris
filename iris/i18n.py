@@ -288,8 +288,8 @@ _EN: Dict[str, str] = {
     "smtp.generic": "SMTP error: {error}",
     "smtp.unknown": "Error while sending: {error}",
     # -- parsers -----------------------------------------------------------
-    "parsers.missing_pymupdf": (
-        "PyMuPDF is not installed: PDF files cannot be read (pip install PyMuPDF)"
+    "parsers.missing_pypdf": (
+        "pypdf is not installed: PDF files cannot be read (pip install pypdf)"
     ),
     "parsers.missing_openpyxl": (
         "openpyxl is not installed: .xlsx files cannot be read (pip install openpyxl)"
@@ -570,8 +570,8 @@ _IT: Dict[str, str] = {
     "smtp.generic": "Errore SMTP: {error}",
     "smtp.unknown": "Errore durante l'invio: {error}",
     # -- lettura documenti -------------------------------------------------
-    "parsers.missing_pymupdf": (
-        "PyMuPDF non è installato: impossibile leggere i file PDF (pip install PyMuPDF)"
+    "parsers.missing_pypdf": (
+        "pypdf non è installato: impossibile leggere i file PDF (pip install pypdf)"
     ),
     "parsers.missing_openpyxl": (
         "openpyxl non è installato: impossibile leggere i file .xlsx (pip install openpyxl)"

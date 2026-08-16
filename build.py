@@ -38,7 +38,7 @@ HIDDEN_IMPORTS = [
     "tkinter.filedialog",
     "tkinter.messagebox",
     "tkinter.scrolledtext",
-    "fitz",
+    "pypdf",
     "openpyxl",
     "xlrd",
     "docx",

@@ -3,7 +3,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Commercial Licence Available](https://img.shields.io/badge/Commercial%20Licence-Available-green.svg)](COMMERCIAL-LICENSE.md)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-174%20passing-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-180%20passing-brightgreen.svg)](#testing)
 
 **Iris** is a desktop application that turns a document full of company names and email addresses into a batch of personalised emails — and sends them, or writes them to disk for review.
 
@@ -107,7 +107,7 @@ On Windows you can use the helper scripts `install_dependencies.bat` and `run.ba
 
 | Package | Used for | If missing |
 |---|---|---|
-| `PyMuPDF` | PDF parsing | PDFs cannot be read (explicit message) |
+| `pypdf` | PDF parsing | PDFs cannot be read (explicit message) |
 | `openpyxl` | `.xlsx` / `.xlsm` parsing | Those formats cannot be read |
 | `xlrd` | `.xls` parsing (binary format) | `.xls` files cannot be read |
 | `python-docx` | `.docx` parsing | `.docx` files cannot be read |
@@ -359,7 +359,7 @@ Without a display the GUI tests are skipped automatically and the rest still run
 
 | File | Tests | Coverage |
 |---|---:|---|
-| `tests/test_parsers.py` | 33 | Address validation, text, tables, PDF, CSV, `.xls`, unsupported formats |
+| `tests/test_parsers.py` | 39 | Address validation, text, tables, PDF files, CSV, `.xls`, unsupported formats |
 | `tests/test_mailer.py` | 43 | Templates, validation, headers, non-ASCII text, attachments, bulk sending, pause between messages |
 | `tests/test_gui_smoke.py` | 31 | Start-up, analysis, validation, configuration, sender profiles, templates, language switching, end-to-end send |
 | `tests/test_config_store.py` | 37 | Save/reload, password obfuscation, encodings, language, saved profiles and templates, backward compatibility |
@@ -467,7 +467,10 @@ Prices are per organisation, excluding VAT. **Seats are never counted.** Full te
 *not* included, and the third-party component review:
 **[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
 
-> ⚠️ **PDF support depends on PyMuPDF, which is itself AGPL-3.0** (dual-licensed by Artifex). A commercial Iris licence cannot relicense it: shipping PDF support in a closed-source product needs a commercial PyMuPDF licence too, or a build without the PDF reader. Details and both ways round it are in [§9](COMMERCIAL-LICENSE.md#9-third-party-components).
+> ✅ **Every dependency is permissively licensed.** Nothing in the tree imposes copyleft on
+> a commercial licensee — the PDF reader was moved from PyMuPDF (AGPL / Artifex commercial)
+> to `pypdf` (BSD-3-Clause) precisely so this stays true. See
+> [§9](COMMERCIAL-LICENSE.md#9-third-party-components).
 
 ### How to get in touch
 

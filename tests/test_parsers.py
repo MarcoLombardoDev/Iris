@@ -221,3 +221,109 @@ def test_unsupported_format(tmp_path):
 def test_missing_file():
     with pytest.raises(FileNotFoundError):
         parsers.extract_from_file("/path/that/does/not/exist.txt")
+
+
+# --------------------------------------------------------------------------
+# Reading an actual PDF file (pypdf)
+# --------------------------------------------------------------------------
+def _minimal_pdf(lines):
+    """Build a one-page PDF holding ``lines``, with no extra dependency.
+
+    Writing the bytes by hand keeps the test suite free of a PDF *writer*:
+    the point is to exercise the real reader, not to prove a library can
+    produce a file.
+    """
+    content = "BT /F1 11 Tf 60 780 Td 16 TL\n"
+    for line in lines:
+        escaped = line.replace("\\", r"\\").replace("(", r"\(").replace(")", r"\)")
+        content += f"({escaped}) Tj T*\n"
+    content += "ET"
+    stream = content.encode("latin-1")
+
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+        b"/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+        b"<< /Length %d >>\nstream\n%s\nendstream" % (len(stream), stream),
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = []
+    for number, body in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += b"%d 0 obj\n" % number + body + b"\nendobj\n"
+
+    xref_at = len(out)
+    out += b"xref\n0 %d\n" % (len(objects) + 1)
+    out += b"0000000000 65535 f \n"
+    for offset in offsets:
+        out += b"%010d 00000 n \n" % offset
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (
+        len(objects) + 1,
+        xref_at,
+    )
+    return bytes(out)
+
+
+def _write_pdf(tmp_path, lines, name="recipients.pdf"):
+    path = tmp_path / name
+    path.write_bytes(_minimal_pdf(lines))
+    return str(path)
+
+
+def test_reading_a_pdf_file(tmp_path):
+    path = _write_pdf(
+        tmp_path,
+        [
+            "Acme Corporation, purchasing@acme.example",
+            "Globex Ltd; info@globex.example",
+        ],
+    )
+    assert parsers.extract_from_pdf(path) == [
+        parsers.Recipient("Acme Corporation", "purchasing@acme.example"),
+        parsers.Recipient("Globex Ltd", "info@globex.example"),
+    ]
+
+
+def test_reading_a_pdf_with_the_company_on_the_previous_line(tmp_path):
+    path = _write_pdf(tmp_path, ["Initech S.r.l.", "sales@initech.example"])
+    assert parsers.extract_from_pdf(path) == [
+        parsers.Recipient("Initech S.r.l.", "sales@initech.example")
+    ]
+
+
+def test_reading_a_pdf_reports_the_pages(tmp_path):
+    messages = []
+    path = _write_pdf(tmp_path, ["Acme Corp, info@acme.example"])
+    parsers.extract_from_pdf(path, log=messages.append)
+    assert any("1" in message for message in messages)
+
+
+def test_a_pdf_without_addresses_yields_nothing(tmp_path):
+    path = _write_pdf(tmp_path, ["Quarterly report", "No contact details here"])
+    assert parsers.extract_from_pdf(path) == []
+
+
+def test_duplicate_addresses_in_a_pdf_are_dropped(tmp_path):
+    path = _write_pdf(
+        tmp_path,
+        [
+            "Acme Corporation, purchasing@acme.example",
+            "Acme Corp SpA, PURCHASING@acme.example",
+        ],
+    )
+    assert parsers.extract_from_pdf(path) == [
+        parsers.Recipient("Acme Corporation", "purchasing@acme.example")
+    ]
+
+
+def test_the_pdf_file_handle_is_released(tmp_path):
+    """On Windows a lingering handle would block the file."""
+    import os
+
+    path = _write_pdf(tmp_path, ["Acme Corp, info@acme.example"])
+    parsers.extract_from_pdf(path)
+    os.remove(path)  # fails with PermissionError if the file is still open
+    assert not os.path.exists(path)

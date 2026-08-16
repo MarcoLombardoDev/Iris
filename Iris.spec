@@ -21,7 +21,7 @@ binaries = []
 hiddenimports = [
     'tkinter', 'tkinter.ttk', 'tkinter.filedialog', 'tkinter.messagebox',
     'tkinter.scrolledtext',
-    'fitz', 'openpyxl', 'xlrd', 'docx',
+    'pypdf', 'openpyxl', 'xlrd', 'docx',
     'PIL', 'PIL.Image', 'PIL.ImageTk',
     # Required at runtime by PIL.ImageTk (see build.py).
     'PIL._tkinter_finder',

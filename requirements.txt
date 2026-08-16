@@ -1,8 +1,9 @@
 # Runtime dependencies of Email Sender.
 # Install with:  pip install -r requirements.txt
 
-# PDF reading
-PyMuPDF>=1.24,<2
+# PDF reading. pypdf is pure Python and BSD-3-Clause: unlike PyMuPDF (AGPL /
+# Artifex commercial) it puts no copyleft obligation on a commercial licensee.
+pypdf>=4.0
 
 # Modern Excel reading (.xlsx/.xlsm)
 openpyxl>=3.1

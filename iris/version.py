@@ -13,7 +13,7 @@
 # proprietary or closed-source products - see COMMERCIAL-LICENSE.md.
 """Application version and naming — the single source of truth."""
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 #: Short name, used for the executable, folders and log files.
 APP_NAME = "Iris"

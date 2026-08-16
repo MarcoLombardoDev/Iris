@@ -226,21 +226,25 @@ def extract_from_pdf_text(text: str) -> List[Recipient]:
 
 
 def extract_from_pdf(path: str, log: Logger = None) -> List[Recipient]:
-    """Extract company/email pairs from a PDF file (requires PyMuPDF)."""
+    """Extract company/email pairs from a PDF file (requires pypdf).
+
+    Only the page text is needed: all the recognition happens in
+    :func:`extract_from_pdf_text`, which works on a plain string.
+    """
     try:
-        import fitz  # PyMuPDF
+        from pypdf import PdfReader
     except ImportError as exc:  # pragma: no cover - depends on the environment
-        raise UnsupportedFormatError(t("parsers.missing_pymupdf")) from exc
+        raise UnsupportedFormatError(t("parsers.missing_pypdf")) from exc
 
     results: List[Recipient] = []
-    doc = fitz.open(path)
-    try:
-        for page_number, page in enumerate(doc, start=1):
+    # Opening the file here (rather than handing pypdf the path) guarantees the
+    # handle is released: on Windows a lingering one blocks the file.
+    with open(path, "rb") as handle:
+        for page_number, page in enumerate(PdfReader(handle).pages, start=1):
             if log:
                 log(t("log.analysis_page", page=page_number))
-            results.extend(extract_from_pdf_text(page.get_text()))
-    finally:
-        doc.close()
+            # extract_text() returns None on a page with no text layer.
+            results.extend(extract_from_pdf_text(page.extract_text() or ""))
     return dedupe(results)
 
 

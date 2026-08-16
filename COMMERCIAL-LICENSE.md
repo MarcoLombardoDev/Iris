@@ -213,7 +213,7 @@ a commercial licence cannot and does not relicense them.
 
 | Component | Licence | Commercial redistribution |
 |---|---|---|
-| **PyMuPDF** | **AGPL-3.0 or commercial (Artifex)** | ⚠️ **Requires its own commercial licence — see the warning below** |
+| pypdf | BSD-3-Clause | ✅ Permissive |
 | openpyxl | MIT | ✅ Permissive |
 | xlrd | BSD-3-Clause | ✅ Permissive |
 | python-docx | MIT | ✅ Permissive |
@@ -222,22 +222,17 @@ a commercial licence cannot and does not relicense them.
 | pywin32 | PSF-style | ✅ Permissive, Windows only |
 | PyInstaller | GPL-2.0 **with bootloader exception** | ✅ The exception exists to allow proprietary frozen applications |
 
-> ### ⚠️ PyMuPDF is copyleft, and PDF reading depends on it
->
-> `PyMuPDF` is dual-licensed by Artifex under **AGPL-3.0 or a paid commercial licence** —
-> the same model as Iris itself. A commercial Iris licence removes *Iris's* copyleft
-> obligation; it cannot remove PyMuPDF's. **If your product ships PDF support, you need a
-> commercial PyMuPDF licence from Artifex in addition to this one.**
->
-> Two ways round it, both available today:
->
-> - **Ship without PDF support.** PyMuPDF is imported only where it is used: without it
->   every other format (Excel, CSV, Word, text) keeps working and PDF selection reports a
->   clear message. Nothing else in the dependency tree is copyleft.
-> - **Ask.** Replacing the PDF reader with a permissively licensed one is on the roadmap
->   and can be prioritised as custom development — see §5.
->
-> This is stated up front rather than discovered by your legal team during review.
+**Every dependency is permissively licensed and safe to redistribute in a commercial
+product.** No dependency imposes copyleft, field-of-use or anti-commercial conditions.
+
+> **Resolved: the PyMuPDF problem.** PDF reading used to depend on `PyMuPDF`, dual-licensed
+> by Artifex under **AGPL-3.0 or a paid commercial licence** — the same model as Iris
+> itself. A commercial Iris licence removes *Iris's* copyleft obligation but could never
+> remove PyMuPDF's, so a closed-source product shipping PDF support would have needed a
+> second commercial licence from Artifex. The reader now uses
+> [`pypdf`](https://github.com/py-pdf/pypdf) (BSD-3-Clause), which extracts the same page
+> text with no copyleft attached. Nothing in the dependency tree now restricts commercial
+> sale.
 
 Verify these against the versions you actually ship. They are listed in good faith, current
 as at the version of this document, and are not a legal opinion.

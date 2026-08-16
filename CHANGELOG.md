@@ -2,7 +2,7 @@
 
 All notable changes to this project, most recent first.
 
-## [Unreleased]
+## [2.2.0] - 2026-08-16
 
 ### Changed
 - **The commercial offer is now identical across Iris, Argus and Proteus**, with only
@@ -19,9 +19,22 @@ All notable changes to this project, most recent first.
   - 50% off under 10 employees and €1M revenue; free licences for non-profits,
     academia and published research.
 - README licensing section, badge and CLA contact line aligned to the same wording.
-- Documented that PDF support depends on **PyMuPDF, itself AGPL-3.0**: a commercial
-  Iris licence cannot relicense it, so a closed-source product shipping PDF support
-  needs a commercial PyMuPDF licence from Artifex, or a build without the PDF reader.
+- Test suite grown from 174 to 180 tests.
+- **The PDF reader moved from PyMuPDF to `pypdf`.** PyMuPDF is dual-licensed by
+  Artifex under AGPL-3.0 or a paid commercial licence: a commercial Iris licence
+  removed Iris's copyleft obligation but could never remove PyMuPDF's, so a
+  closed-source product shipping PDF support would have needed a second licence
+  from Artifex. `pypdf` is BSD-3-Clause, and **nothing in the dependency tree now
+  restricts commercial sale**.
+  - No functional change. PyMuPDF was used for exactly one call — the page text —
+    and all the recognition already happened in `extract_from_pdf_text()`, which
+    works on a plain string. Both engines were compared on inline, stacked,
+    two-column and dense-table layouts, and on a file produced by a different
+    toolchain with accented company names: identical results, identical speed.
+  - The install shrinks from ~64 MB to ~3.5 MB, and the dependency is now pure
+    Python with no C library to build.
+- New tests covering `extract_from_pdf()` against a real PDF file — the previous
+  suite only exercised the text parser, never the file reader.
 
 
 ## [2.1.0] - 2026-08-15
