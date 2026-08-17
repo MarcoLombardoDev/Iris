@@ -1,0 +1,52 @@
+name: Build
+
+# Builds the single-file Windows executable with PyInstaller (build.py).
+# PyInstaller does not cross-compile: this only runs on windows-latest, and
+# is the only way to produce a real Iris.exe without a Windows machine.
+#
+# - workflow_dispatch: build on demand, from the Actions tab or the API.
+#   The executable is attached to the run as a downloadable artifact.
+# - push of a "v*" tag: same build, additionally attached to the matching
+#   GitHub Release, which — unlike a workflow artifact — never expires.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-windows:
+    name: Windows executable
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run the test suite
+        run: python -m pytest tests -v
+
+      - name: Build the executable
+        run: python build.py
+
+      - name: Upload the executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Iris-windows-exe
+          path: dist/Iris.exe
+          if-no-files-found: error
+
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Iris.exe
