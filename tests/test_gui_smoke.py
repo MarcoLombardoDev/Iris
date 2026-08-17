@@ -527,3 +527,138 @@ def test_the_address_survives_a_language_switch(app):
 
     assert app.footer_email.cget("text") == CONTACT_EMAIL
     assert "Licenza commerciale" in app.footer_label.cget("text")
+
+
+# --------------------------------------------------------------------------
+# Multiple attachments
+# --------------------------------------------------------------------------
+def _answer_file_dialog(monkeypatch, paths):
+    from iris import gui
+
+    monkeypatch.setattr(gui.filedialog, "askopenfilenames", lambda *a, **k: paths)
+
+
+def test_adding_several_attachments_at_once(app, tmp_path, monkeypatch):
+    first = tmp_path / "a.pdf"
+    second = tmp_path / "b.pdf"
+    first.write_bytes(b"%PDF-1.4 a")
+    second.write_bytes(b"%PDF-1.4 b")
+    _answer_file_dialog(monkeypatch, (str(first), str(second)))
+
+    app.add_attachment_files()
+
+    assert app.attachments == [str(first), str(second)]
+    assert app.attachment_listbox.size() == 2
+    assert app.attachment_listbox.get(0) == "a.pdf"
+
+
+def test_adding_the_same_file_twice_is_a_no_op(app, tmp_path, monkeypatch):
+    path = tmp_path / "a.pdf"
+    path.write_bytes(b"%PDF-1.4 a")
+    _answer_file_dialog(monkeypatch, (str(path),))
+
+    app.add_attachment_files()
+    app.add_attachment_files()
+
+    assert app.attachments == [str(path)]
+
+
+def test_removing_selected_attachments(app, tmp_path, monkeypatch):
+    first = tmp_path / "a.pdf"
+    second = tmp_path / "b.pdf"
+    first.write_bytes(b"x")
+    second.write_bytes(b"x")
+    _answer_file_dialog(monkeypatch, (str(first), str(second)))
+    app.add_attachment_files()
+
+    app.attachment_listbox.selection_set(0)
+    app.remove_selected_attachments()
+
+    assert app.attachments == [str(second)]
+    assert app.attachment_listbox.size() == 1
+
+
+def test_removing_with_nothing_selected_shows_a_hint(app, monkeypatch):
+    from iris import gui
+
+    shown = []
+    monkeypatch.setattr(gui.messagebox, "showinfo", lambda *a, **k: shown.append(a))
+
+    app.remove_selected_attachments()
+
+    assert shown
+
+
+def test_attachments_are_sent_and_survive_a_language_switch(app, tmp_path, monkeypatch):
+    path = tmp_path / "a.pdf"
+    path.write_bytes(b"x")
+    _answer_file_dialog(monkeypatch, (str(path),))
+    app.add_attachment_files()
+
+    app.language_display.set("Italiano")
+    app.on_language_change()
+
+    assert app.attachments == [str(path)]
+    assert app.attachment_listbox.size() == 1
+
+
+def test_attachments_are_saved_and_reloaded(app, tmp_path, monkeypatch):
+    _configure(app)
+    path = tmp_path / "a.pdf"
+    path.write_bytes(b"x")
+    _answer_file_dialog(monkeypatch, (str(path),))
+    app.add_attachment_files()
+
+    app.save_config()
+    app.attachments = []
+    app._refresh_attachment_widget()
+    app.load_config()
+
+    assert app.attachments == [str(path)]
+
+
+# --------------------------------------------------------------------------
+# Cc / Bcc
+# --------------------------------------------------------------------------
+def test_cc_and_bcc_are_saved_and_reloaded(app, tmp_path):
+    _configure(app)
+    app.cc.set("cc@example.com")
+    app.bcc.set("bcc@example.com")
+
+    app.save_config()
+    app.cc.set("")
+    app.bcc.set("")
+    app.load_config()
+
+    assert app.cc.get() == "cc@example.com"
+    assert app.bcc.get() == "bcc@example.com"
+
+
+def test_an_invalid_cc_blocks_validation(app):
+    _configure(app)
+    app.cc.set("not-an-address")
+    assert app.validate_email_config() is False
+
+
+def test_saving_a_template_keeps_cc_bcc_and_attachments(app, tmp_path, monkeypatch):
+    _configure(app)
+    path = tmp_path / "a.pdf"
+    path.write_bytes(b"x")
+    _answer_file_dialog(monkeypatch, (str(path),))
+    app.add_attachment_files()
+    app.cc.set("cc@example.com")
+    app.bcc.set("bcc@example.com")
+    _answer_name_prompt(monkeypatch, "With extras")
+
+    app.save_template_as()
+
+    app.cc.set("")
+    app.bcc.set("")
+    app.attachments = []
+    app._refresh_attachment_widget()
+    app.template_display.set("With extras")
+    app.on_template_selected()
+
+    assert app.cc.get() == "cc@example.com"
+    assert app.bcc.get() == "bcc@example.com"
+    assert app.attachments == [str(path)]

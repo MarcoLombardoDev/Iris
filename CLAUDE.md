@@ -65,6 +65,13 @@ reloads the file, changes only its own entry and writes back, so it never clobbe
 the user is editing elsewhere. `save_config()` in the GUI must pass `profiles=` and
 `templates=` or a full save wipes the saved libraries — there is a regression test.
 
+**Multi-value fields use deliberately different separators, don't unify them.**
+`attachments` joins paths with `|` (illegal in a Windows filename, so it can never
+collide with real content); Cc/Bcc split on `,` or `;` (how every mail client already
+lets people type an address list). Files from before 2.3 have a single
+`attachment_path` key instead of `attachments` — `_read_attachments()` falls back to
+it, and that fallback is the only thing that should ever read that old key.
+
 **Passwords are obfuscated, not encrypted.** Base64 with a `b64:` prefix, `0600` on
 POSIX. Never describe it as encryption in docs or UI. Each sender profile carries its own
 password, so a `config.ini` with several profiles is proportionally more sensitive.

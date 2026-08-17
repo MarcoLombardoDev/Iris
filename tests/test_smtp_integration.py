@@ -27,6 +27,7 @@ class TinySMTPServer(threading.Thread):
         self.socket.listen(5)
         self.port = self.socket.getsockname()[1]
         self.messages = []
+        self.envelopes = []
         self.sessions = 0
         #: Abruptly close the connection after N messages (reconnection test).
         self.drop_after = drop_after
@@ -73,6 +74,10 @@ class TinySMTPServer(threading.Thread):
                             break
                         payload.extend(data_line)
                     self.messages.append(bytes(payload))
+                    # Recorded per message, not just per session: the envelope
+                    # is what proves Bcc reached the SMTP transaction even
+                    # though it never appears in the bytes above.
+                    self.envelopes.append(list(envelope.get("to", [])))
                     delivered += 1
                     stream.write(b"250 Message accepted\r\n")
                     stream.flush()
@@ -139,6 +144,31 @@ def test_end_to_end_send(smtp_server):
     assert parsed["To"] == "acme@example.com"
     assert parsed["Subject"] == "Notice for Acme S.r.l."
     assert "accented text: àèìòù" in parsed.get_content()
+
+
+def test_bcc_reaches_the_envelope_but_not_the_wire(smtp_server):
+    """The whole point of Bcc: the SMTP transaction sees it, the message doesn't."""
+    template = mailer.EmailTemplate(
+        sender=TEMPLATE.sender,
+        subject=TEMPLATE.subject,
+        body=TEMPLATE.body,
+        cc="cc@example.com",
+        bcc="secret@example.com",
+    )
+
+    result = mailer.send_bulk(
+        make_settings(smtp_server.port), template, [Recipient("Acme", "acme@example.com")]
+    )
+
+    assert result.sent_count == 1
+    envelope = smtp_server.envelopes[0]
+    assert any("acme@example.com" in line for line in envelope)
+    assert any("cc@example.com" in line for line in envelope)
+    assert any("secret@example.com" in line for line in envelope)  # accepted...
+
+    parsed = email.message_from_bytes(smtp_server.messages[0], policy=email.policy.default)
+    assert parsed["Cc"] == "cc@example.com"
+    assert parsed["Bcc"] is None  # ...but never appears in the transmitted headers
 
 
 def test_send_with_attachment(smtp_server, tmp_path):

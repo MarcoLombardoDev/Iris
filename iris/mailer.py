@@ -19,6 +19,7 @@ sending logic can be tested and reused without a graphical interface.
 
 import mimetypes
 import os
+import re
 import smtplib
 import socket
 import time
@@ -86,6 +87,11 @@ class EmailTemplate:
     sender: str = ""
     subject: str = ""
     body: str = ""
+    #: Raw, comma/semicolon-separated address lists. They are the same on
+    #: every message of a batch: a mail-merge template personalises the
+    #: recipient, not who else is copied on it.
+    cc: str = ""
+    bcc: str = ""
     attachments: List[str] = field(default_factory=list)
 
     def render_subject(self, company: str) -> str:
@@ -93,6 +99,20 @@ class EmailTemplate:
 
     def render_body(self, company: str) -> str:
         return render_template(self.body, company)
+
+
+_ADDRESS_LIST_SPLIT = re.compile(r"[;,]")
+
+
+def parse_address_list(value: str) -> List[str]:
+    """Split a Cc/Bcc field into individual addresses.
+
+    Accepts commas and semicolons as separators, either one, since both are
+    common in mail clients and Iris's own document parsing.
+    """
+    if not value:
+        return []
+    return [part.strip() for part in _ADDRESS_LIST_SPLIT.split(value) if part.strip()]
 
 
 def validate_settings(settings: SmtpSettings, template: EmailTemplate) -> List[str]:
@@ -128,6 +148,14 @@ def validate_settings(settings: SmtpSettings, template: EmailTemplate) -> List[s
 
     if not template.body.strip():
         errors.append(t("validate.body_missing"))
+
+    for address in parse_address_list(template.cc):
+        if not is_valid_email(address):
+            errors.append(t("validate.cc_invalid", value=address))
+
+    for address in parse_address_list(template.bcc):
+        if not is_valid_email(address):
+            errors.append(t("validate.bcc_invalid", value=address))
 
     for path in template.attachments:
         if path and not os.path.exists(path):
@@ -195,6 +223,15 @@ def build_message(
     message = EmailMessage()
     message["From"] = template.sender.strip()
     message["To"] = recipient.email
+    cc_list = parse_address_list(template.cc)
+    if cc_list:
+        message["Cc"] = ", ".join(cc_list)
+    bcc_list = parse_address_list(template.bcc)
+    if bcc_list:
+        # smtplib.SMTP.send_message() reads Bcc to compute the envelope
+        # recipients, then deletes the header from the copy it transmits —
+        # this is the whole mechanism, nothing else is needed to hide it.
+        message["Bcc"] = ", ".join(bcc_list)
     message["Subject"] = template.render_subject(recipient.company)
     message["Date"] = formatdate(localtime=True)
     try:

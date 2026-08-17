@@ -3,7 +3,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Commercial Licence Available](https://img.shields.io/badge/Commercial%20Licence-Available-green.svg)](COMMERCIAL-LICENSE.md)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-180%20passing-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-211%20passing-brightgreen.svg)](#testing)
 
 **Iris** is a desktop application that turns a document full of company names and email addresses into a batch of personalised emails — and sends them, or writes them to disk for review.
 
@@ -57,9 +57,10 @@ The interface is available in **English (default)** and **Italian**, switchable 
 - **Multi-format parsing** — PDF, Excel (`.xlsx` / `.xlsm` / `.xls`), CSV, Word (`.docx`) and plain text (`.txt`)
 - **Automatic extraction** of company names and email addresses, with column order detected by content rather than position
 - **Personalised templates** — `{COMPANY}` in the subject and body is replaced per recipient
-- **Template library** — save subject, message and attachment under a name and switch between them in one click
+- **Template library** — save subject, message, Cc/Bcc and attachments under a name and switch between them in one click
 - **Sender profiles** — keep several SMTP configurations (work account, internal relay, a client's server) and swap them from a drop-down
-- **Optional attachment** shared by every message
+- **Cc and Bcc**, sent on every message of the batch
+- **Multiple attachments** shared by every message
 - **SMTP delivery** over SSL/TLS, STARTTLS or plain, with or without authentication
 - **Connection test** that validates server and credentials without sending anything
 - **Single-connection batches** with automatic reconnection and early abort on unrecoverable errors
@@ -162,8 +163,10 @@ Gmail and Microsoft 365 require an **app password** when two-factor authenticati
 |---|---|
 | **TEMPLATE** | Recall a saved template — see [Templates](#sender-profiles-and-templates) |
 | **SUBJECT** * | Subject line, may contain `{COMPANY}` |
+| **CC** | Optional, copied on every message of the batch. Comma or semicolon separated for more than one address |
+| **BCC** | Same as CC, but the address never appears in the message itself — only in the SMTP envelope |
 | **MESSAGE** * | Plain-text body, may contain `{COMPANY}` |
-| **ATTACHMENT** | Optional file attached to every message |
+| **ATTACHMENTS** | Optional files attached to every message. `ADD FILES...` opens a multi-select dialog; `REMOVE` drops the highlighted entries |
 
 ```
 Subject:  Annual notice for {COMPANY}
@@ -175,6 +178,8 @@ Message:  Dear {COMPANY},
 For the recipient "Acme Corporation" the subject becomes `Annual notice for Acme Corporation`.
 
 > `{AZIENDA}` — the Italian placeholder used by version 1.x — is still accepted, so existing templates keep working.
+
+> Iris sends one message per recipient, never one message to the whole batch. Cc and Bcc are the same on every one of those individual messages — a recipient's message is never Cc'd or Bcc'd to another recipient in the same batch, only to whatever fixed address you put in those fields.
 
 ### Options
 
@@ -197,7 +202,7 @@ Both the sender settings and the message can be saved under a name and recalled 
 Picking an entry from the drop-down copies it into the fields below, where it can still be edited before sending — loading a profile or a template changes the form, never the file. Saving is immediate: the entry is written to `config.ini` straight away, and the fields you were editing elsewhere are left untouched.
 
 - **Sender profiles** hold the address, server, port, connection type and credentials.
-- **Templates** hold the subject, message and attachment path.
+- **Templates** hold the subject, message, Cc, Bcc and the attachment list.
 
 Names are free text; square brackets are dropped and runs of whitespace collapse, because the name becomes a section header inside `config.ini`.
 
@@ -212,6 +217,8 @@ smtp_password = b64:...
 [TEMPLATE:Annual notice]
 email_subject = Annual notice for {COMPANY}
 email_body = Dear {COMPANY},...
+email_cc = accounting@example.com
+attachments = annual_notice.pdf|terms_and_conditions.pdf
 ```
 
 > Profile passwords are obfuscated exactly like the main one — which is to say **not encrypted**. A `config.ini` holding several accounts is that much more sensitive; see [Security Notes](#security-notes).
@@ -269,7 +276,7 @@ If no name can be determined, the address domain is used: `info@acme.example` be
 
 ## Sending
 
-Before a batch starts, the configuration is validated: sender format, host, numeric port in range, subject and body present, attachment existing. Every problem is listed at once.
+Before a batch starts, the configuration is validated: sender format, host, numeric port in range, subject and body present, Cc/Bcc addresses well-formed, every attachment existing. Every problem is listed at once.
 
 | Button | Effect |
 |---|---|
@@ -291,7 +298,7 @@ On an **unrecoverable error** (rejected credentials, unknown host, connection re
 `CREATE EMAILS ONLY` writes one file per recipient and sends nothing — useful for a review pass, or to forward the messages manually.
 
 - On **Windows with Outlook installed**, `.msg` files are produced, ready to open and send.
-- Otherwise standard **`.eml`** files are written, which Outlook, Thunderbird and most clients open natively. The attachment is included in both formats.
+- Otherwise standard **`.eml`** files are written, which Outlook, Thunderbird and most clients open natively. Attachments and Cc/Bcc are included in both formats.
 
 Files land in the `emails/` folder, named after company and address (for example `Acme Corporation_purchasing_acme.example.eml`). Before generating, that folder is cleared of previously generated `.msg`/`.eml` files — **nothing else is touched**.
 
@@ -360,12 +367,12 @@ Without a display the GUI tests are skipped automatically and the rest still run
 | File | Tests | Coverage |
 |---|---:|---|
 | `tests/test_parsers.py` | 39 | Address validation, text, tables, PDF files, CSV, `.xls`, unsupported formats |
-| `tests/test_mailer.py` | 43 | Templates, validation, headers, non-ASCII text, attachments, bulk sending, pause between messages |
-| `tests/test_gui_smoke.py` | 31 | Start-up, analysis, validation, configuration, sender profiles, templates, language switching, end-to-end send |
-| `tests/test_config_store.py` | 37 | Save/reload, password obfuscation, encodings, language, saved profiles and templates, backward compatibility |
+| `tests/test_mailer.py` | 58 | Templates, validation, headers, non-ASCII text, Cc/Bcc, multiple attachments, bulk sending, pause between messages |
+| `tests/test_gui_smoke.py` | 40 | Start-up, analysis, validation, configuration, sender profiles, templates, Cc/Bcc, attachments, language switching, end-to-end send |
+| `tests/test_config_store.py` | 43 | Save/reload, password obfuscation, encodings, language, saved profiles and templates, Cc/Bcc, multiple attachments, backward compatibility |
 | `tests/test_i18n.py` | 19 | Catalogue consistency, placeholders, fallbacks |
 | `tests/test_msgwriter.py` | 7 | `.eml`, attachments, fallback without Outlook, folder cleanup |
-| `tests/test_smtp_integration.py` | 4 | Real SMTP dialogue, connection reuse, reconnection |
+| `tests/test_smtp_integration.py` | 5 | Real SMTP dialogue, connection reuse, reconnection, Bcc envelope vs. wire |
 
 ## Building the Executable
 

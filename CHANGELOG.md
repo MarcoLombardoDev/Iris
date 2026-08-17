@@ -2,6 +2,39 @@
 
 All notable changes to this project, most recent first.
 
+## [2.3.0] - 2026-08-17
+
+### Added
+- **Cc and Bcc fields**, on the same row in the Configuration tab. Comma or semicolon
+  separated for more than one address, validated like any other address, and identical
+  on every message of the batch — since Iris sends one message per recipient, a
+  recipient's message is never Cc'd or Bcc'd to another recipient in the same batch.
+  Bcc uses the standard mechanism: `smtplib.SMTP.send_message()` reads the `Bcc` header
+  to compute the SMTP envelope recipients, then strips it before transmitting, so the
+  address is delivered but never appears in the message itself — verified with an
+  integration test that inspects both the raw SMTP envelope and the bytes on the wire.
+- **Multiple attachments.** The single-file field became a list: `ADD FILES...` opens a
+  multi-select dialog, `REMOVE` drops the highlighted entries. `mailer.EmailTemplate`
+  already supported a list of attachments; only the interface was limited to one.
+- Both are part of the saved template library: `MessageTemplate` gained `email_cc`,
+  `email_bcc`, and `attachments` replaces the old `attachment_path`.
+- `mailer.parse_address_list()`, a small comma/semicolon splitter shared by validation
+  and message building.
+
+### Changed
+- The default window grew to 900x900 (minimum 820x800) to fit the new Cc/Bcc row and the
+  taller, multi-line attachment list without clipping the Save button — verified by
+  measuring the tab's required height against the window, not just by eye.
+- `config.ini`'s `[EMAIL]` section and `[TEMPLATE:name]` sections now store `attachments`
+  (paths joined with `|`, which cannot appear in a Windows filename) instead of a single
+  `attachment_path`, plus `email_cc` / `email_bcc`.
+- Test suite grown from 180 to 211 tests.
+
+### Compatibility
+- A `config.ini` (or a saved template) written before this version has `attachment_path`
+  instead of `attachments`; it is still read as a single-item attachment list. Newly
+  saved files use only the new key.
+
 ## [2.2.0] - 2026-08-16
 
 ### Changed

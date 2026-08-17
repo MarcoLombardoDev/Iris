@@ -78,13 +78,19 @@ class IrisApp:
         self.language_display = tk.StringVar()
         self.subject_template = tk.StringVar()
         self.body_template = tk.StringVar()
-        self.attachment_path = tk.StringVar()
+        self.cc = tk.StringVar()
+        self.bcc = tk.StringVar()
         self.send_delay = tk.StringVar(value="0")
         self.profile_display = tk.StringVar()
         self.template_display = tk.StringVar()
 
         #: Recipients currently listed.
         self.actions = []
+
+        #: Attachment paths for the current template. A plain list, like
+        #: self.profiles below, because a Listbox has no textvariable to
+        #: bind to — it survives a rebuild_ui() the same way they do.
+        self.attachments = []
 
         #: Saved sender profiles and email templates, read from config.ini.
         self.profiles = []
@@ -109,8 +115,8 @@ class IrisApp:
         self.load_config(apply_to_widgets=False)
 
         self.root.title(f"{APP_TITLE} {__version__}")
-        self.root.geometry("900x800")
-        self.root.minsize(820, 700)
+        self.root.geometry("900x900")
+        self.root.minsize(820, 800)
         self._set_window_icon()
 
         if self.bootstyle_available:
@@ -485,6 +491,15 @@ class IrisApp:
             font=("Arial", 8),
         ).pack(side=tk.LEFT, padx=(10, 0))
 
+        cc_bcc_frame = ttk.Frame(template_frame)
+        cc_bcc_frame.pack(fill=tk.X, padx=5, pady=(0, 5))
+        ttk.Label(cc_bcc_frame, text=t("config.cc"), width=12).pack(side=tk.LEFT, padx=(0, 10))
+        self.cc_entry = ttk.Entry(cc_bcc_frame, textvariable=self.cc, width=32)
+        self.cc_entry.pack(side=tk.LEFT, padx=(0, 20))
+        ttk.Label(cc_bcc_frame, text=t("config.bcc")).pack(side=tk.LEFT, padx=(0, 10))
+        self.bcc_entry = ttk.Entry(cc_bcc_frame, textvariable=self.bcc, width=32)
+        self.bcc_entry.pack(side=tk.LEFT)
+
         body_frame = ttk.Frame(template_frame)
         body_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         ttk.Label(body_frame, text=t("config.message"), width=12).pack(
@@ -499,34 +514,38 @@ class IrisApp:
 
         attachment_frame = ttk.Frame(template_frame)
         attachment_frame.pack(fill=tk.X, padx=5, pady=(0, 10))
-        attachment_frame.columnconfigure(1, weight=1)
 
-        ttk.Label(attachment_frame, text=t("config.attachment"), width=12).grid(
-            row=0, column=0, sticky=tk.W, padx=(0, 10)
+        ttk.Label(attachment_frame, text=t("config.attachment"), width=12).pack(
+            side=tk.LEFT, padx=(0, 10), anchor=tk.N
         )
-        attachment_style = ttk.Style(self.root)
-        attachment_style.configure("Attachment.TEntry", fieldbackground="white")
-        attachment_style.map("Attachment.TEntry", fieldbackground=[("readonly", "white")])
-        self.attachment_entry = ttk.Entry(
-            attachment_frame,
-            textvariable=self.attachment_path,
-            state="readonly",
-            style="Attachment.TEntry",
+
+        attachment_list_frame = ttk.Frame(attachment_frame)
+        attachment_list_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.attachment_listbox = tk.Listbox(
+            attachment_list_frame, height=3, selectmode=tk.EXTENDED, exportselection=False
         )
-        self.attachment_entry.grid(row=0, column=1, sticky=tk.EW, padx=(0, 5))
+        self.attachment_listbox.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        attachment_scroll = ttk.Scrollbar(
+            attachment_list_frame, orient=tk.VERTICAL, command=self.attachment_listbox.yview
+        )
+        self.attachment_listbox.configure(yscrollcommand=attachment_scroll.set)
+        attachment_scroll.pack(side=tk.LEFT, fill=tk.Y)
+        self._refresh_attachment_widget()
+
+        attachment_buttons = ttk.Frame(attachment_frame)
+        attachment_buttons.pack(side=tk.LEFT, padx=(8, 0), anchor=tk.N)
         self.button(
-            attachment_frame,
+            attachment_buttons,
             t("config.select_file"),
-            self.browse_attachment_file,
+            self.add_attachment_files,
             style="info-outline",
-        ).grid(row=0, column=2, sticky=tk.E, padx=(0, 5))
+        ).pack(fill=tk.X, pady=(0, 4))
         self.button(
-            attachment_frame,
+            attachment_buttons,
             t("config.remove"),
-            self.clear_attachment_file,
+            self.remove_selected_attachments,
             style="danger-outline",
-            width=10,
-        ).grid(row=0, column=3, sticky=tk.E)
+        ).pack(fill=tk.X)
 
         # A Text widget has no textvariable: keep it in sync manually.
         self.body_text.bind("<KeyRelease>", self.update_body_template)
@@ -724,11 +743,14 @@ class IrisApp:
             return
         self.subject_template.set(template.email_subject)
         self._set_body_text(template.email_body)
-        self.attachment_path.set(template.attachment_path)
+        self.cc.set(template.email_cc)
+        self.bcc.set(template.email_bcc)
+        self.attachments = list(template.attachments)
+        self._refresh_attachment_widget()
         self._announce("log.template_loaded", template.name)
 
     def save_template_as(self):
-        """Store subject, message and attachment as a named template."""
+        """Store subject, message, Cc/Bcc and attachments as a named template."""
         name = self._ask_name(
             "dialog.template_name_title", "dialog.template_name_body", self.template_display.get()
         )
@@ -744,7 +766,9 @@ class IrisApp:
             name=name,
             email_subject=self.subject_template.get(),
             email_body=self.body_template.get(),
-            attachment_path=self.attachment_path.get().strip(),
+            email_cc=self.cc.get().strip(),
+            email_bcc=self.bcc.get().strip(),
+            attachments=list(self.attachments),
         )
         try:
             config_store.save_template(template)
@@ -1039,12 +1063,13 @@ class IrisApp:
 
     def current_template(self):
         self.update_body_template()
-        attachment = self.attachment_path.get().strip()
         return mailer.EmailTemplate(
             sender=self.sender_email.get().strip(),
             subject=self.subject_template.get(),
             body=self.body_template.get(),
-            attachments=[attachment] if attachment else [],
+            cc=self.cc.get().strip(),
+            bcc=self.bcc.get().strip(),
+            attachments=list(self.attachments),
         )
 
     def validate_email_config(self, require_template=True):
@@ -1340,8 +1365,9 @@ class IrisApp:
     # ------------------------------------------------------------------
     # Attachment and template
     # ------------------------------------------------------------------
-    def browse_attachment_file(self):
-        file_path = filedialog.askopenfilename(
+    def add_attachment_files(self):
+        """Add one or more files to the current list of attachments."""
+        file_paths = filedialog.askopenfilenames(
             title=t("filedialog.attachment"),
             filetypes=[
                 (t("filetype.all"), "*.*"),
@@ -1351,14 +1377,36 @@ class IrisApp:
                 (t("filetype.text"), "*.txt"),
             ],
         )
-        if file_path:
-            self.attachment_path.set(file_path)
-            self.log(t("log.attachment_selected", path=file_path))
+        added = False
+        for file_path in file_paths:
+            if file_path not in self.attachments:
+                self.attachments.append(file_path)
+                self.log(t("log.attachment_selected", path=file_path))
+                added = True
+        if added:
+            self._refresh_attachment_widget()
 
-    def clear_attachment_file(self):
-        if self.attachment_path.get():
-            self.log(t("log.attachment_removed", path=self.attachment_path.get()))
-        self.attachment_path.set("")
+    def remove_selected_attachments(self):
+        """Remove the attachments highlighted in the list."""
+        selection = set(self.attachment_listbox.curselection())
+        if not selection:
+            messagebox.showinfo(t("dialog.info"), t("dialog.select_attachment"))
+            return
+        removed = [path for index, path in enumerate(self.attachments) if index in selection]
+        self.attachments = [
+            path for index, path in enumerate(self.attachments) if index not in selection
+        ]
+        self._refresh_attachment_widget()
+        for path in removed:
+            self.log(t("log.attachment_removed", path=path))
+
+    def _refresh_attachment_widget(self):
+        """Redraw the attachment list from ``self.attachments``."""
+        if not hasattr(self, "attachment_listbox"):
+            return
+        self.attachment_listbox.delete(0, tk.END)
+        for path in self.attachments:
+            self.attachment_listbox.insert(tk.END, os.path.basename(path) or path)
 
     def update_body_template(self, *args):
         """Keep the StringVar aligned with the Text widget content."""
@@ -1406,7 +1454,9 @@ class IrisApp:
             connection_type=self.connection_type.get(),
             email_subject=self.subject_template.get(),
             email_body=self.body_template.get(),
-            attachment_path=self.attachment_path.get().strip(),
+            email_cc=self.cc.get().strip(),
+            email_bcc=self.bcc.get().strip(),
+            attachments=list(self.attachments),
             language=i18n.get_language(),
             send_delay=self.send_delay.get().strip() or "0",
             # Saving the whole configuration must not drop the saved
@@ -1440,6 +1490,7 @@ class IrisApp:
         self._loaded_config = result if result.found else None
         self.profiles = list(result.config.profiles)
         self.templates = list(result.config.templates)
+        self.attachments = list(result.config.attachments)
         self._refresh_library_choices()
 
         if apply_to_widgets:
@@ -1457,8 +1508,10 @@ class IrisApp:
         self.smtp_port.set(config.smtp_port)
         self.smtp_user.set(config.smtp_user)
         self.smtp_password.set(config.smtp_password)
-        self.attachment_path.set(config.attachment_path)
         self.subject_template.set(config.email_subject)
+        self.cc.set(config.email_cc)
+        self.bcc.set(config.email_bcc)
+        self._refresh_attachment_widget()
         self.send_delay.set(config.send_delay or "0")
         self._set_body_text(config.email_body)
         self._set_connection_display(config.connection_type)

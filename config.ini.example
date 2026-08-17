@@ -38,8 +38,15 @@ email_body = Dear {COMPANY},
 	please find the notice attached.
 	Kind regards.
 
-; Optional attachment sent to every recipient (full path)
-attachment_path =
+; Optional Cc/Bcc, sent on every message of the batch. Comma or semicolon
+; separated when there is more than one address.
+email_cc =
+email_bcc =
+
+; Optional attachments sent to every recipient (full paths, separated by "|",
+; which cannot appear in a Windows filename). Files written before version
+; 2.3 used a single "attachment_path" key instead; it still loads.
+attachments =
 
 ; Seconds to wait between one message and the next; 0 sends without pausing.
 ; A small pause keeps providers that rate limit a sender happy.
@@ -77,4 +84,6 @@ send_delay = 0
 ;email_subject = Annual notice for {COMPANY}
 ;email_body = Dear {COMPANY},
 ;	please find attached the annual notice.
-;attachment_path =
+;email_cc = accounting@example.com
+;email_bcc =
+;attachments = annual_notice.pdf|terms_and_conditions.pdf

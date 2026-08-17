@@ -390,3 +390,91 @@ def test_the_delay_is_announced_once(fake_session):
 
     announcements = [text for text in messages if "1.5" in text and "Pausing" in text]
     assert len(announcements) == 1
+
+
+# --------------------------------------------------------------------------
+# Address lists (Cc/Bcc)
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("", []),
+        ("a@example.com", ["a@example.com"]),
+        ("a@example.com, b@example.com", ["a@example.com", "b@example.com"]),
+        ("a@example.com; b@example.com", ["a@example.com", "b@example.com"]),
+        (" a@example.com ,  b@example.com ", ["a@example.com", "b@example.com"]),
+        ("a@example.com,,b@example.com", ["a@example.com", "b@example.com"]),
+    ],
+)
+def test_parse_address_list(value, expected):
+    assert mailer.parse_address_list(value) == expected
+
+
+def test_valid_cc_and_bcc_pass_validation():
+    template = make_template(cc="a@example.com, b@example.com", bcc="c@example.com")
+    assert mailer.validate_settings(make_settings(), template) == []
+
+
+def test_invalid_cc_is_reported():
+    errors = mailer.validate_settings(make_settings(), make_template(cc="not-an-address"))
+    assert any("cc" in error.lower() for error in errors)
+
+
+def test_invalid_bcc_is_reported():
+    errors = mailer.validate_settings(make_settings(), make_template(bcc="not-an-address"))
+    assert any("bcc" in error.lower() for error in errors)
+
+
+def test_one_bad_address_among_several_is_still_caught():
+    errors = mailer.validate_settings(
+        make_settings(), make_template(cc="ok@example.com, not-an-address")
+    )
+    assert any("not-an-address" in error for error in errors)
+
+
+def test_message_carries_cc_header():
+    template = make_template(cc="cc1@example.com, cc2@example.com")
+    message = mailer.build_message(template, RECIPIENT)
+    assert message["Cc"] == "cc1@example.com, cc2@example.com"
+
+
+def test_message_carries_bcc_header():
+    """Bcc is set on the built message; send_message() strips it before the wire."""
+    template = make_template(bcc="hidden@example.com")
+    message = mailer.build_message(template, RECIPIENT)
+    assert message["Bcc"] == "hidden@example.com"
+
+
+def test_no_cc_bcc_header_when_not_set():
+    message = mailer.build_message(make_template(), RECIPIENT)
+    assert message["Cc"] is None
+    assert message["Bcc"] is None
+
+
+# --------------------------------------------------------------------------
+# Multiple attachments
+# --------------------------------------------------------------------------
+def test_several_attachments_are_all_included(tmp_path):
+    first = tmp_path / "a.pdf"
+    second = tmp_path / "b.pdf"
+    first.write_bytes(b"%PDF-1.4 a")
+    second.write_bytes(b"%PDF-1.4 b")
+    message = mailer.build_message(
+        make_template(attachments=[str(first), str(second)]), RECIPIENT
+    )
+    names = sorted(part.get_filename() for part in message.iter_attachments())
+    assert names == ["a.pdf", "b.pdf"]
+
+
+def test_one_missing_attachment_does_not_block_the_others(tmp_path):
+    present = tmp_path / "present.pdf"
+    present.write_bytes(b"%PDF-1.4 content")
+    messages = []
+    message = mailer.build_message(
+        make_template(attachments=[str(present), str(tmp_path / "missing.pdf")]),
+        RECIPIENT,
+        log=messages.append,
+    )
+    names = [part.get_filename() for part in message.iter_attachments()]
+    assert names == ["present.pdf"]
+    assert any("not found" in text for text in messages)

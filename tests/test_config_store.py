@@ -18,7 +18,9 @@ def make_config(**kwargs):
         connection_type="starttls",
         email_subject="Notice for {COMPANY}",
         email_body="Dear {COMPANY},\ngood morning.",
-        attachment_path="",
+        email_cc="",
+        email_bcc="",
+        attachments=[],
         language="en",
     )
     defaults.update(kwargs)
@@ -210,7 +212,12 @@ def test_profiles_and_templates_round_trip(tmp_path):
         ],
         templates=[
             config_store.MessageTemplate(
-                name="Reminder", email_subject="Hello {COMPANY}", email_body="Body text"
+                name="Reminder",
+                email_subject="Hello {COMPANY}",
+                email_body="Body text",
+                email_cc="accounting@example.com",
+                email_bcc="archive@example.com",
+                attachments=["/tmp/notice.pdf", "/tmp/terms.pdf"],
             )
         ],
     )
@@ -222,6 +229,9 @@ def test_profiles_and_templates_round_trip(tmp_path):
     assert reloaded.profiles[0].smtp_password == "p4ss"
     assert [item.name for item in reloaded.templates] == ["Reminder"]
     assert reloaded.templates[0].email_subject == "Hello {COMPANY}"
+    assert reloaded.templates[0].email_cc == "accounting@example.com"
+    assert reloaded.templates[0].email_bcc == "archive@example.com"
+    assert reloaded.templates[0].attachments == ["/tmp/notice.pdf", "/tmp/terms.pdf"]
 
 
 def test_a_profile_password_is_not_stored_in_clear(tmp_path):
@@ -339,3 +349,61 @@ def test_a_pre_2_1_file_loads_with_empty_libraries(tmp_path):
     assert config.profiles == []
     assert config.templates == []
     assert config.send_delay == "0"
+
+
+# --------------------------------------------------------------------------
+# Multiple attachments and Cc/Bcc
+# --------------------------------------------------------------------------
+def test_multiple_attachments_round_trip(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config_store.save(make_config(attachments=["/docs/a.pdf", "/docs/b.pdf"]), path)
+    assert config_store.load(path).config.attachments == ["/docs/a.pdf", "/docs/b.pdf"]
+
+
+def test_cc_and_bcc_round_trip(tmp_path):
+    path = str(tmp_path / "config.ini")
+    config_store.save(
+        make_config(email_cc="a@example.com, b@example.com", email_bcc="c@example.com"), path
+    )
+    reloaded = config_store.load(path).config
+    assert reloaded.email_cc == "a@example.com, b@example.com"
+    assert reloaded.email_bcc == "c@example.com"
+
+
+def test_a_pre_2_3_file_reads_the_single_attachment_path(tmp_path):
+    """config.ini written before multiple attachments existed used one key."""
+    path = tmp_path / "config.ini"
+    path.write_text(
+        "[EMAIL]\nsender_email = sender@example.com\nattachment_path = /docs/notice.pdf\n",
+        encoding="utf-8",
+    )
+    config = config_store.load(str(path)).config
+    assert config.attachments == ["/docs/notice.pdf"]
+
+
+def test_an_empty_legacy_attachment_path_yields_no_attachments(tmp_path):
+    path = tmp_path / "config.ini"
+    path.write_text(
+        "[EMAIL]\nsender_email = sender@example.com\nattachment_path =\n", encoding="utf-8"
+    )
+    assert config_store.load(str(path)).config.attachments == []
+
+
+def test_a_legacy_template_attachment_path_still_loads(tmp_path):
+    path = tmp_path / "config.ini"
+    path.write_text(
+        "[EMAIL]\nsender_email = sender@example.com\n\n"
+        "[TEMPLATE:Old]\nemail_subject = Hi\nattachment_path = /docs/old.pdf\n",
+        encoding="utf-8",
+    )
+    template = config_store.load(str(path)).config.template("Old")
+    assert template.attachments == ["/docs/old.pdf"]
+
+
+def test_saving_never_writes_the_legacy_key(tmp_path):
+    """Once saved by this version, the file uses `attachments` only."""
+    path = str(tmp_path / "config.ini")
+    config_store.save(make_config(attachments=["/docs/a.pdf"]), path)
+    content = (tmp_path / "config.ini").read_text(encoding="utf-8")
+    assert "attachments = /docs/a.pdf" in content
+    assert "attachment_path" not in content

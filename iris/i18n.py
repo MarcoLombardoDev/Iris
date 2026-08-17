@@ -81,8 +81,10 @@ _EN: Dict[str, str] = {
     "config.subject": "SUBJECT *",
     "config.message": "MESSAGE *",
     "config.variables": "Variables: {placeholder}",
-    "config.attachment": "ATTACHMENT",
-    "config.select_file": "SELECT FILE",
+    "config.cc": "CC",
+    "config.bcc": "BCC",
+    "config.attachment": "ATTACHMENTS",
+    "config.select_file": "ADD FILES...",
     "config.remove": "REMOVE",
     "config.save": "SAVE CONFIGURATION",
     "config.test_connection": "TEST CONNECTION",
@@ -173,6 +175,7 @@ _EN: Dict[str, str] = {
     "dialog.confirm_delete_template": "Delete the template '{name}'?",
     "dialog.select_profile": "Select a sender profile from the list first.",
     "dialog.select_template": "Select a template from the list first.",
+    "dialog.select_attachment": "Select an attachment from the list first.",
     # -- log messages ------------------------------------------------------
     "log.logging_ready": "Logging system initialized. Log file: {path}",
     "log.icon_error": "Could not set the window icon: {error}",
@@ -264,6 +267,8 @@ _EN: Dict[str, str] = {
     "validate.body_missing": "Enter the email message in the configuration.",
     "validate.attachment_missing": "The selected attachment does not exist: {path}",
     "validate.recipient_invalid": "Invalid recipient address: {value}",
+    "validate.cc_invalid": "Invalid CC address: {value}",
+    "validate.bcc_invalid": "Invalid BCC address: {value}",
     "validate.delay_invalid": (
         "The pause between messages must be a number of seconds equal to or greater than 0."
     ),
@@ -360,8 +365,10 @@ _IT: Dict[str, str] = {
     "config.subject": "OGGETTO *",
     "config.message": "MESSAGGIO *",
     "config.variables": "Variabili: {placeholder}",
-    "config.attachment": "ALLEGATO",
-    "config.select_file": "SELEZIONA FILE",
+    "config.cc": "CC",
+    "config.bcc": "CCN",
+    "config.attachment": "ALLEGATI",
+    "config.select_file": "AGGIUNGI FILE...",
     "config.remove": "RIMUOVI",
     "config.save": "SALVA CONFIGURAZIONE",
     "config.test_connection": "VERIFICA CONNESSIONE",
@@ -453,6 +460,7 @@ _IT: Dict[str, str] = {
     "dialog.confirm_delete_template": "Vuoi eliminare il template '{name}'?",
     "dialog.select_profile": "Seleziona prima un profilo mittente dall'elenco.",
     "dialog.select_template": "Seleziona prima un template dall'elenco.",
+    "dialog.select_attachment": "Seleziona prima un allegato dall'elenco.",
     # -- messaggi di log ---------------------------------------------------
     "log.logging_ready": "Sistema di logging inizializzato. File di log: {path}",
     "log.icon_error": "Impossibile impostare l'icona della finestra: {error}",
@@ -546,6 +554,8 @@ _IT: Dict[str, str] = {
     "validate.body_missing": "Inserire il messaggio dell'email nella configurazione.",
     "validate.attachment_missing": "L'allegato selezionato non esiste: {path}",
     "validate.recipient_invalid": "Indirizzo del destinatario non valido: {value}",
+    "validate.cc_invalid": "Indirizzo CC non valido: {value}",
+    "validate.bcc_invalid": "Indirizzo CCN non valido: {value}",
     "validate.delay_invalid": (
         "La pausa tra i messaggi deve essere un numero di secondi maggiore o uguale a 0."
     ),

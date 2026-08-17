@@ -46,6 +46,10 @@ _FORBIDDEN_NAME_CHARS = "[]"
 #: (never share it, never commit it).
 _OBFUSCATION_PREFIX = "b64:"
 
+#: Separator between attachment paths in the ``attachments`` key. A pipe is
+#: illegal in Windows filenames, so it can never appear inside a real path.
+_ATTACHMENT_SEP = "|"
+
 _ENCODINGS = ("utf-8", "utf-8-sig", "windows-1252", "iso-8859-1", "cp1252")
 
 
@@ -77,12 +81,14 @@ class SenderProfile:
 
 @dataclass
 class MessageTemplate:
-    """A named subject/body/attachment set."""
+    """A named subject/body/Cc/Bcc/attachments set."""
 
     name: str = ""
     email_subject: str = ""
     email_body: str = ""
-    attachment_path: str = ""
+    email_cc: str = ""
+    email_bcc: str = ""
+    attachments: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -97,7 +103,9 @@ class AppConfig:
     connection_type: str = "starttls"
     email_subject: str = ""
     email_body: str = ""
-    attachment_path: str = ""
+    email_cc: str = ""
+    email_bcc: str = ""
+    attachments: List[str] = field(default_factory=list)
     language: str = DEFAULT_LANGUAGE
     send_delay: str = "0"
     profiles: List[SenderProfile] = field(default_factory=list)
@@ -118,6 +126,8 @@ class AppConfig:
 
 
 #: Fields of :class:`AppConfig` stored as plain keys in ``[EMAIL]``.
+#: ``attachments`` is not here: it is a list, joined with ``_ATTACHMENT_SEP``
+#: by :func:`save` like the profile/template sections are handled specially.
 _SCALAR_FIELDS = (
     "sender_email",
     "smtp_server",
@@ -127,10 +137,35 @@ _SCALAR_FIELDS = (
     "connection_type",
     "email_subject",
     "email_body",
-    "attachment_path",
+    "email_cc",
+    "email_bcc",
     "language",
     "send_delay",
 )
+
+
+def _parse_attachments(value: str) -> List[str]:
+    """Split the ``attachments`` key into individual paths."""
+    return [item for item in (part.strip() for part in value.split(_ATTACHMENT_SEP)) if item]
+
+
+def _format_attachments(paths: List[str]) -> str:
+    """Join attachment paths for storage."""
+    return _ATTACHMENT_SEP.join(path for path in paths if path)
+
+
+def _read_attachments(section) -> List[str]:
+    """Read ``attachments``, falling back to the pre-2.3 ``attachment_path``.
+
+    Files written before multiple attachments existed have a single
+    ``attachment_path`` key; ``attachments`` is only absent on those files,
+    never merely empty, so ``None`` (not ``""``) is the right sentinel here.
+    """
+    raw = section.get("attachments")
+    if raw is not None:
+        return _parse_attachments(raw)
+    legacy = section.get("attachment_path", "")
+    return [legacy] if legacy else []
 
 
 @dataclass
@@ -226,7 +261,9 @@ def _read_templates(parser: configparser.ConfigParser) -> List[MessageTemplate]:
                 name=name,
                 email_subject=section.get("email_subject", ""),
                 email_body=section.get("email_body", ""),
-                attachment_path=section.get("attachment_path", ""),
+                email_cc=section.get("email_cc", ""),
+                email_bcc=section.get("email_bcc", ""),
+                attachments=_read_attachments(section),
             )
         )
     return sorted(templates, key=lambda item: item.name.lower())
@@ -291,7 +328,9 @@ def load(path: Optional[str] = None, apply_language: bool = True) -> LoadResult:
         connection_type=section.get("connection_type", "starttls").strip().lower(),
         email_subject=section.get("email_subject", ""),
         email_body=section.get("email_body", ""),
-        attachment_path=section.get("attachment_path", ""),
+        email_cc=section.get("email_cc", ""),
+        email_bcc=section.get("email_bcc", ""),
+        attachments=_read_attachments(section),
         language=language,
         send_delay=section.get("send_delay", "0"),
         profiles=_read_profiles(parser),
@@ -310,6 +349,7 @@ def save(config: AppConfig, path: Optional[str] = None) -> str:
     values = {name: getattr(config, name) for name in _SCALAR_FIELDS}
     values["smtp_password"] = obfuscate(config.smtp_password)
     values["language"] = normalize_language(config.language)
+    values["attachments"] = _format_attachments(config.attachments)
     parser[SECTION] = values
 
     for profile in sorted(config.profiles, key=lambda item: item.name.lower()):
@@ -332,7 +372,9 @@ def save(config: AppConfig, path: Optional[str] = None) -> str:
         parser[TEMPLATE_PREFIX + name] = {
             "email_subject": template.email_subject,
             "email_body": template.email_body,
-            "attachment_path": template.attachment_path,
+            "email_cc": template.email_cc,
+            "email_bcc": template.email_bcc,
+            "attachments": _format_attachments(template.attachments),
         }
 
     with open(config_path, "w", encoding="utf-8") as handle:

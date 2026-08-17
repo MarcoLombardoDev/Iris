@@ -59,7 +59,8 @@ SAMPLE_CONFIG = config_store.AppConfig(
         "Kind regards,\n"
         "Customer Office"
     ),
-    attachment_path="",
+    email_cc="accounting@example.com",
+    attachments=["annual_notice.pdf", "terms_and_conditions.pdf"],
     language=LANGUAGE,
     send_delay="1",
     profiles=[
@@ -85,6 +86,8 @@ SAMPLE_CONFIG = config_store.AppConfig(
             name="Annual notice",
             email_subject="Annual notice for {COMPANY}",
             email_body="Dear {COMPANY},\n\nplease find attached the annual notice.",
+            email_cc="accounting@example.com",
+            attachments=["annual_notice.pdf", "terms_and_conditions.pdf"],
         ),
         config_store.MessageTemplate(
             name="Payment reminder",
@@ -142,11 +145,13 @@ def main():
     # Sample configuration, straight into the widgets.
     app._loaded_config = config_store.LoadResult(config=SAMPLE_CONFIG, path="config.ini",
                                                  encoding="utf-8")
-    app.apply_config_to_widgets()
-
-    # The saved libraries normally arrive through load_config().
+    # The saved libraries and attachments normally arrive through
+    # load_config(); apply_config_to_widgets() alone only handles the
+    # scalar fields, so they are set here the way load_config() would.
     app.profiles = list(SAMPLE_CONFIG.profiles)
     app.templates = list(SAMPLE_CONFIG.templates)
+    app.attachments = list(SAMPLE_CONFIG.attachments)
+    app.apply_config_to_widgets()
     app._refresh_library_choices()
     app.profile_display.set(SAMPLE_CONFIG.profiles[0].name)
     app.template_display.set(SAMPLE_CONFIG.templates[0].name)
