@@ -18,6 +18,10 @@ jobs:
   build-windows:
     name: Windows executable
     runs-on: windows-latest
+    # softprops/action-gh-release needs write access to create the release
+    # and upload the asset; the default token is often read-only.
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
