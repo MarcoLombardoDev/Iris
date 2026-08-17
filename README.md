@@ -3,7 +3,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Commercial Licence Available](https://img.shields.io/badge/Commercial%20Licence-Available-green.svg)](COMMERCIAL-LICENSE.md)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-211%20passing-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-216%20passing-brightgreen.svg)](#testing)
 
 **Iris** is a desktop application that turns a document full of company names and email addresses into a batch of personalised emails — and sends them, or writes them to disk for review.
 
@@ -373,6 +373,7 @@ Without a display the GUI tests are skipped automatically and the rest still run
 | `tests/test_i18n.py` | 19 | Catalogue consistency, placeholders, fallbacks |
 | `tests/test_msgwriter.py` | 7 | `.eml`, attachments, fallback without Outlook, folder cleanup |
 | `tests/test_smtp_integration.py` | 5 | Real SMTP dialogue, connection reuse, reconnection, Bcc envelope vs. wire |
+| `tests/test_build.py` | 5 | `.github/workflows/build.yml` itself: fixed release title and notes, the fallback that corrects an already-published release |
 
 ## Building the Executable
 
@@ -387,6 +388,13 @@ The result is `dist/Iris.exe` (one file, no console). On Windows `compile.bat` r
 > Do **not** run `pyinstaller --name=Iris main.py` from the project folder: it would overwrite `Iris.spec` with a generated file full of absolute paths. `build.py` avoids this by writing the temporary spec into `build/`.
 
 The application icon is generated from primitives by [`assets/make_icon.py`](assets/make_icon.py), so the repository carries no third-party artwork.
+
+### Without a Windows machine
+
+PyInstaller does not cross-compile, so building `Iris.exe` from Linux or macOS is not possible locally. [`.github/workflows/build.yml`](.github/workflows/build.yml) does it on a real Windows runner instead:
+
+- **Already built** — every tagged version (`vX.Y.Z`) is published as a [GitHub Release](https://github.com/MarcoLombardoDev/Iris/releases) with `Iris.exe` attached, no login required, no expiry.
+- **On demand** — from the *Actions* tab, run the *Build* workflow manually (`workflow_dispatch`); the executable is attached to that run as a 90-day artifact.
 
 ## Troubleshooting
 

@@ -53,4 +53,25 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
+          name: Iris ${{ github.ref_name }}
+          body: |
+            Windows executable for Iris ${{ github.ref_name }}. Download `Iris.exe` below —
+            no installation required.
+
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md)
+            for what changed in this release.
           files: dist/Iris.exe
+
+      # Belt and braces: softprops/action-gh-release updates an existing
+      # release's title/notes too, but a release first created by hand (or
+      # by an older run of this workflow, before this step existed) can keep
+      # a stale title. Force it explicitly so a re-run always corrects it.
+      - name: Ensure the release title and notes are correct
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release edit "${{ github.ref_name }}" \
+            --title "Iris ${{ github.ref_name }}" \
+            --notes "Windows executable for Iris ${{ github.ref_name }}. Download Iris.exe below — no installation required. See CHANGELOG.md for what changed in this release."

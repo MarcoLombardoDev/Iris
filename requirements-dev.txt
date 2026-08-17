@@ -6,6 +6,10 @@
 pytest>=8.0
 pyinstaller>=6.0
 
+# Only used by tests/test_build.py, to check .github/workflows/build.yml
+# itself rather than run it.
+pyyaml>=6.0
+
 # Only used to regenerate the fixtures and assets committed in the repository:
 #   python tests/data/make_sample_xls.py   (legacy .xls sample)
 #   python assets/make_icon.py             (application icon)

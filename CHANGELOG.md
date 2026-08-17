@@ -2,6 +2,22 @@
 
 All notable changes to this project, most recent first.
 
+## [Unreleased]
+
+### Fixed
+- **The GitHub Release published for a version tag had no title or notes.**
+  `.github/workflows/build.yml` never set them, so a release showed up with
+  only the bare tag name and an empty body. It now sets a fixed, readable
+  title (`Iris vX.Y.Z`) and fixed notes pointing at `CHANGELOG.md`, plus a
+  `gh release edit` step that runs unconditionally after the release step —
+  belt and braces for a release that already exists with a stale title
+  (created by hand, or by a run of the workflow from before this fix), which
+  `softprops/action-gh-release` alone does not reliably correct.
+- Adds `tests/test_build.py`, which parses the workflow YAML itself (GitHub
+  Actions is the only thing that can run it) and checks for exactly these two
+  regressions — verified to fail against the previous version of the file.
+- Test suite grown from 211 to 216 tests.
+
 ## [2.3.0] - 2026-08-17
 
 ### Added
