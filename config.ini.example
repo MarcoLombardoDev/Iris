@@ -1,0 +1,89 @@
+; Example configuration for Iris - Email Sender.
+;
+; Copy this file as "config.ini" next to the executable (or next to the source
+; tree) and fill in the values — or, more simply, configure everything from the
+; CONFIGURATION tab of the application and press SAVE CONFIGURATION.
+;
+; WARNING: config.ini holds your mail server credentials. The password is
+; stored obfuscated (base64, "b64:" prefix): that prevents casual reading, it
+; is NOT encryption. Never share this file and never commit it (it is already
+; listed in .gitignore).
+
+[EMAIL]
+; Interface language: en | it
+language = en
+
+; Sender address
+sender_email = sender@example.com
+
+; SMTP server and port
+smtp_server = smtp.example.com
+smtp_port = 587
+
+; Connection type: ssl | starttls | none
+;   ssl      -> port 465 (implicit TLS)
+;   starttls -> port 587 (Gmail, Outlook, most corporate servers)
+;   none     -> port 25  (internal relay, no encryption)
+connection_type = starttls
+
+; Credentials: leave BOTH empty to send without authentication
+smtp_user = sender@example.com
+smtp_password =
+
+; Email template. The {COMPANY} placeholder is replaced with the recipient
+; company name extracted from the document. {AZIENDA} is also accepted, for
+; backward compatibility with templates written for version 1.x.
+email_subject = Notice for {COMPANY}
+email_body = Dear {COMPANY},
+	please find the notice attached.
+	Kind regards.
+
+; Optional Cc/Bcc, sent on every message of the batch. Comma or semicolon
+; separated when there is more than one address.
+email_cc =
+email_bcc =
+
+; Optional attachments sent to every recipient (full paths, separated by "|",
+; which cannot appear in a Windows filename). Files written before version
+; 2.3 used a single "attachment_path" key instead; it still loads.
+attachments =
+
+; Seconds to wait between one message and the next; 0 sends without pausing.
+; A small pause keeps providers that rate limit a sender happy.
+send_delay = 0
+
+; ---------------------------------------------------------------------------
+; Saved sender profiles and templates (optional)
+;
+; One section per saved entry, named after it. They are normally written by
+; the SAVE AS... buttons in the CONFIGURATION tab rather than by hand.
+; Selecting one in the application copies it into the fields above.
+;
+; NOTE: every profile keeps its own password, obfuscated exactly like the one
+; above — which is to say NOT encrypted. A file holding several accounts is
+; that much more sensitive.
+; ---------------------------------------------------------------------------
+
+;[PROFILE:Customer Office]
+;sender_email = notices@example.com
+;smtp_server = smtp.example.com
+;smtp_port = 587
+;connection_type = starttls
+;smtp_user = notices@example.com
+;smtp_password =
+
+;[PROFILE:Internal relay]
+;sender_email = no-reply@example.com
+;smtp_server = relay.internal.example
+;smtp_port = 25
+;connection_type = none
+;smtp_user =
+;smtp_password =
+
+;[TEMPLATE:Annual notice]
+;email_subject = Annual notice for {COMPANY}
+;email_body = Dear {COMPANY},
+;	please find attached the annual notice.
+;email_cc = accounting@example.com
+;email_bcc =
+;attachments = annual_notice.pdf|terms_and_conditions.pdf

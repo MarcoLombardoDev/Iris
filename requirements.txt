@@ -1,0 +1,25 @@
+# Runtime dependencies of Email Sender.
+# Install with:  pip install -r requirements.txt
+
+# PDF reading. pypdf is pure Python and BSD-3-Clause: unlike PyMuPDF (AGPL /
+# Artifex commercial) it puts no copyleft obligation on a commercial licensee.
+pypdf>=4.0
+
+# Modern Excel reading (.xlsx/.xlsm)
+openpyxl>=3.1
+
+# Legacy Excel reading (.xls) - openpyxl does NOT support this format
+xlrd>=2.0.1
+
+# Word document reading (.docx)
+python-docx>=1.1
+
+# Theme. Optional: without it the app falls back to the standard ttk theme.
+ttkbootstrap>=1.10
+
+# Required by ttkbootstrap to build its theme (PIL.ImageTk).
+Pillow>=10.0
+
+# .msg generation through Outlook: Windows only.
+# Without pywin32/Outlook the application writes standard .eml files instead.
+pywin32>=306; sys_platform == "win32"
