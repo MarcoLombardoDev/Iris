@@ -1,9 +1,9 @@
 # Contributor License Agreement (CLA)
 
-**Iris — Individual Contributor License Agreement**
+**Iris — Individual Contributor License Agreement**  
 Version 1.0, August 2026
 
-Thank you for your interest in contributing to **Iris — Email Sender** (the "Project"), maintained by **Marco Lombardo** (the "Project Owner").
+Thank you for your interest in contributing to **Iris** (the "Project"), maintained by **Marco Lombardo** (the "Project Owner").
 
 This Contributor License Agreement ("Agreement") documents the rights granted by contributors to the Project Owner. This is a legally binding document, so please read it carefully before agreeing. This Agreement protects both you (the contributor) and the Project Owner by clarifying the intellectual property rights associated with your contributions.
 
@@ -16,7 +16,7 @@ By submitting a Pull Request, filing an Issue with a proposed fix, or otherwise 
 ## 1. Definitions
 
 - **"You"** (or **"Contributor"**) means the individual or legal entity that submits a Contribution to the Project Owner. If a legal entity is signing, "You" includes all entities that control, are controlled by, or are under common control with that entity.
-- **"Contribution"** means any original work of authorship, including but not limited to: source code, object code, patches, bug fixes, configuration files, documentation, tests, translations, artwork, or any other materials submitted by You to the Project Owner for inclusion in, or documentation of, the Project, in any form or via any channel.
+- **"Contribution"** means any original work of authorship, including but not limited to: source code, object code, patches, bug fixes, configuration files, documentation, tests, translations, language catalogues, artwork, or any other materials submitted by You to the Project Owner for inclusion in, or documentation of, the Project, in any form or via any channel.
 - **"Project Owner"** means **Marco Lombardo**, the sole copyright holder and maintainer of Iris.
 - **"Project"** means the Iris software and all associated documentation hosted at the official GitHub repository.
 - **"Submit"** means any act of uploading, sending, transmitting, or otherwise making available to the Project Owner a Contribution, including electronic mail lists, source code control systems, and issue tracking systems managed by or on behalf of the Project Owner.
@@ -51,12 +51,12 @@ By submitting a Contribution, You represent and warrant that:
 1. **You own the rights.** You are the sole author and legal owner of the Contribution, and have the legal authority to enter into this Agreement and grant the licenses described herein.
 2. **The Contribution is original.** Your Contribution is entirely your own original creation and does not, to the best of your knowledge, infringe any third-party copyright, patent, trademark, trade secret, or other intellectual property right.
 3. **No third-party restrictions.** Your Contribution does not contain material that is subject to third-party claims of ownership, confidentiality obligations, or restrictive license terms that would conflict with this Agreement.
-4. **Employer conflicts disclosed.** If Your employer(s) or any other entity holds intellectual property rights over works you create (e.g., under an employment agreement or contractor agreement), you represent that:
+4. **No credentials or personal data.** Your Contribution contains no real credentials, API keys, passwords, mail server configurations, personal data or recipient lists. Use the fictitious `example.com` / `.example` domains for samples and tests.
+5. **Employer conflicts disclosed.** If Your employer(s) or any other entity holds intellectual property rights over works you create (e.g., under an employment agreement or contractor agreement), you represent that:
    - Either your employer has granted you express written permission to make such Contribution under this CLA; **or**
    - Your employer has executed a separate Corporate CLA with the Project Owner; **or**
    - The Contribution was created entirely outside the scope of your employment and your employer has no claim over it.
-5. **No illegal content.** Your Contribution does not contain software that is known to be malicious, unlawful, or intended to cause harm.
-6. **No credentials or personal data.** Your Contribution contains no real credentials, API keys, passwords, mail server configurations, personal data or recipient lists. Use the fictitious `example.com` / `.example` domains for samples and tests.
+6. **No illegal content.** Your Contribution does not contain software that is known to be malicious, unlawful, or intended to cause harm.
 
 ---
 
@@ -68,6 +68,8 @@ You explicitly acknowledge and agree that:
 2. The Project Owner **reserves the exclusive right** to offer the Project (including Your Contributions) under **alternative commercial, proprietary, or closed-source license agreements** to any third party, for a fee or otherwise, without any obligation to notify you, pay royalties, or seek further consent.
 3. This dual-licensing right is an essential basis of this Agreement. The Project Owner would not accept Contributions without this right.
 4. You will not receive any compensation, royalties, or revenue share from commercial licensing arrangements.
+
+In return, contributors receive a perpetual, royalty-free commercial licence to Iris for their own use — see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md), §12.
 
 ---
 

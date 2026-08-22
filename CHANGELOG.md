@@ -1,8 +1,43 @@
-# Changelog — Iris
+# Changelog
 
-All notable changes to this project, most recent first.
+All notable changes to Iris are documented here.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+- **Real builds for Windows, macOS and Linux.** `.github/workflows/release.yml`
+  builds each platform on its own GitHub runner — PyInstaller does not
+  cross-compile, so this is the only way each binary can be genuine — and
+  attaches one archive per platform to the release.
+- Every bundle is **smoke-tested on its own platform** before it is offered for
+  download: it has to answer `--version` cleanly, or the asset is not published.
+- `.github/release-body.md`, so the description a downloader reads lives in the
+  repository and can be edited without touching a workflow.
+- `tests/test_release_workflow.py`, which parses the workflow and the release
+  body so a download table can never again promise a platform that is not built.
+- **`--version`** on the command line. It is what the release workflow uses to
+  smoke-test each bundle, and it is parsed before the GUI is imported, so it
+  answers without needing a display.
+
+### Changed
+- **`LICENSE` is now the verbatim FSF text of the AGPL-3.0.** The previous copy
+  was reflowed to long lines, which the licence's own header does not permit
+  ("changing it is not allowed") and which stops GitHub recognising it.
+- **`COMMERCIAL-LICENSE.md` was restructured into the 14-section layout shared
+  by Orion, Iris, Proteus and Argus**, so the same clause sits at the same
+  number in every product. Annual prices are unchanged. The
+  **Perpetual option** is now a per-tier price at three times the annual rate,
+  replacing the single "Small or Medium" figure and the two tiers that were
+  previously quoted separately.
+- `CLA.md` was aligned with the same three products, keeping the representation
+  that is specific to this one.
+- `README.md` follows the section skeleton shared by the four products.
+- Release assets are now archives named `Iris-<version>-<platform>.zip` /
+  `.tar.gz`.
+
 
 ### Changed
 - **The commercial licensing structure was rebuilt around two independent questions**

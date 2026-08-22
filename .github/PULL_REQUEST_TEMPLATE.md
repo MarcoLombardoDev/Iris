@@ -1,23 +1,24 @@
-## Descrizione
+## Description
 
-<!-- Cosa cambia e perché. Se corregge un problema, descrivere il sintomo osservato. -->
+<!-- What changes, and why. If it fixes a bug, describe the symptom you observed. -->
 
-## Tipo di modifica
+## Type of change
 
-- [ ] Correzione di un errore
-- [ ] Nuova funzionalità
-- [ ] Miglioria (prestazioni, leggibilità, interfaccia)
-- [ ] Solo documentazione
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Improvement (performance, readability, interface)
+- [ ] Documentation only
 
-## Verifiche
+## Checks
 
-- [ ] `python -m pytest tests` passa (su Linux: `xvfb-run -a python -m pytest tests`)
-- [ ] Le correzioni di errori sono coperte da un test che fallisce senza la modifica
-- [ ] `CHANGELOG.md` aggiornato
-- [ ] Documentazione aggiornata se il comportamento è cambiato
-- [ ] Se sono state toccate build o dipendenze: `python build.py` eseguito e
-      eseguibile prodotto avviato con esito positivo
+- [ ] `python -m pytest tests` passes (on Linux: `xvfb-run -a python -m pytest tests`)
+- [ ] A bug fix comes with a test that fails without the change
+- [ ] `CHANGELOG.md` updated under *Unreleased*
+- [ ] Documentation updated if the behaviour changed
+- [ ] If the build or the dependencies were touched: `python build.py` run, and the
+      executable it produced started successfully
+- [ ] I have read and agree to the Contributor License Agreement (CLA.md).
 
-## Note per chi revisiona
+## Notes for the reviewer
 
-<!-- Punti a cui prestare attenzione, alternative valutate, limiti noti. -->
+<!-- What to look at, alternatives considered, known limitations. -->

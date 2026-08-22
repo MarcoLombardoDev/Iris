@@ -1,6 +1,6 @@
 # Commercial Licence — Iris
 
-**Iris — Email Sender**
+**Iris — Email Sender**  
 Copyright © 2026 Marco Lombardo
 
 Iris is dual-licensed. It is available under the
@@ -11,6 +11,11 @@ Both licences cover **the same software**. There is no crippled edition, no feat
 back behind a paywall, no licence key and no phone-home. What you buy is **permission**,
 not functionality.
 
+That includes every capability: PDF, Excel, CSV, Word and text parsing,
+personalised templates, sender profiles, the template library, batch sending over
+a single SMTP connection, and `.eml` / `.msg` generation. Nothing is reserved for
+a paid tier, now or later.
+
 > **To buy, or to ask anything commercial — including whether you need this at all —
 > email [marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com?subject=Iris%20commercial%20licence%20enquiry).**
 > Email is the only commercial channel: quotes, contracts, invoicing and pre-sales
@@ -20,7 +25,32 @@ not functionality.
 > The binding contract is the licence certificate issued per customer. It is not legal
 > advice; have your own counsel review it before signing.
 
-The licensing structure, at a glance:
+---
+
+## 1. Do you actually need this?
+
+Most people do not. Read this before reading the price list.
+
+| What you want to do | Licence you need |
+|---|---|
+| Use Iris inside your organisation, however many people, however many machines | **AGPL — free.** Nothing to buy, nothing to declare. |
+| Modify it for your own internal use and keep the changes to yourself | **AGPL — free.** |
+| Publish a fork, or ship a modified version to someone else | **AGPL — free**, provided you release your modified source under AGPL-3.0. |
+| Run a modified Iris as a closed-source internal tool, for your own staff only | **Commercial** — see §3 |
+| Ship Iris, or code derived from it, inside a **closed-source product** you distribute | **Redistribution** — see §4 |
+| Run a modified Iris as a **hosted or SaaS service for your customers**, without publishing your source | **Redistribution** |
+| Redistribute it to your customers under **your own name or branding** | **Redistribution** |
+| Your organisation's policy forbids AGPL code, and you need it in writing | **Commercial** (or **Redistribution**, if you also distribute) |
+
+**Internal use is free, permanently, for organisations of any size.** Anyone telling you
+otherwise about an AGPL project is mistaken. Buy a commercial licence when the AGPL's
+*distribution* terms are the problem — not simply because you are a company.
+
+The dividing line is one rule: **AGPL-3.0 is free as long as the source stays open.**
+
+---
+
+## 2. Licence structure
 
 ```
 PRODUCT LICENSING
@@ -34,116 +64,178 @@ PRODUCT LICENSING
 │   ├── Large       — 250–999 employees
 │   └── Enterprise  — 1,000+ employees / Corporate Group
 │
-└── Redistribution                (distributed to third parties)
+└── Redistribution                (reaches third parties)
     ├── Standard
     └── Enterprise
 ```
 
-**Commercial** and **Redistribution** answer two different questions. Commercial answers
-*"how big is the organisation using this internally?"* — Redistribution answers *"is any
-part of this software reaching someone outside that organisation?"* An organisation that
-only uses Iris itself never needs a Redistribution licence, however large it is; an
-organisation of any size that ships Iris (or code derived from it) to third parties needs
-one regardless of its Commercial tier.
+Three kinds of licence, not four price points on one list:
+
+- **Community** — the AGPL-3.0 build. Free, unlimited, internal use of any size.
+- **Commercial** — removes the AGPL's copyleft obligation for **closed-source internal
+  use**. Sized by the licensee's employee count. See §3.
+- **Redistribution** — grants the right to **ship Iris, or a derivative of it, to third
+  parties** — embedded, OEM'd, resold, or offered as a service to your own customers. See
+  §4. It is a different kind of licence from Commercial, not a bigger version of it: a
+  five-person software house redistributing a product to ten thousand customers needs
+  Redistribution, not a large Commercial tier.
+
+Every tier, in every branch, is the **same software** under the opening of this document:
+no feature is gated behind a higher tier.
 
 ---
 
-## 1. Do you actually need this?
+## 3. What the Commercial licence grants
 
-Most people do not. Read this before reading the price list.
+Subject to payment and to the tier purchased, a non-exclusive, non-transferable licence,
+for **one named legal entity**, to:
 
-| What you want to do | Licence you need |
-|---|---|
-| Use Iris inside your organisation, however many people, however many machines | **AGPL — free.** Nothing to buy, nothing to declare. |
-| Modify it for your own internal use and keep the changes to yourself | **AGPL — free.** |
-| Publish a fork, or ship a modified version to someone else | **AGPL — free**, provided you release your modified source under AGPL-3.0. |
-| Ship Iris, or code derived from it, inside a **closed-source product for your own internal use** | **Commercial** — see §2, §5–§10 for the tier |
-| Run a modified Iris as a **hosted or SaaS service**, without publishing your source | **Commercial** |
-| Embed Iris in a product, or ship it under **your own name or branding**, to third parties | **Redistribution** — see §11–§13 |
-| Distribute a derivative to customers, resell it, or run an OEM programme | **Redistribution** |
-| Your organisation's policy forbids AGPL code, and you need it in writing | **Commercial** (or **Redistribution**, if the result also reaches third parties) |
+1. use, copy and modify Iris;
+2. deploy it as an internal, closed-source tool, without publishing your modified source;
+3. run it as an internally-accessed network service without triggering AGPL section 13,
+   provided access is limited to your own authorised users and installations.
 
-**Internal use is free, permanently, for organisations of any size.** Anyone telling you
-otherwise about an AGPL project is mistaken. Buy a commercial licence when the AGPL's
-*distribution* terms are the problem — not simply because you are a company.
+It does **not** automatically include, at any Commercial tier:
 
-The dividing line is one rule: **AGPL-3.0 is free as long as the source stays open.**
-
----
-
-## 2. What each licence grants
-
-### 2a. Commercial (Small, Medium, Large, Enterprise)
-
-Subject to payment and to the tier purchased, a non-exclusive, non-transferable licence
-to use, copy and modify Iris, and to deploy it — including as a service reached by your
-own employees, contractors or customers — without triggering AGPL §13, and with no
-obligation to publish your modified source.
-
-The licence covers:
-
-- **one legal entity** — the licensee named in the certificate;
-- **internal use** only;
-- **authorised internal users**;
-- **authorised internal installations**.
-
-It does **not** automatically include:
-
-- redistribution;
-- OEM use;
-- embedding in a product distributed to third parties;
+- redistribution to third parties, in any form;
+- OEM or embedding in a product you ship;
 - sublicensing;
-- use by other companies in the same group (see §10, Corporate Group) — including at the
-  Enterprise tier, unless the certificate expressly names those entities.
+- use by other companies in the same corporate group, unless the Enterprise tier's
+  group-wide scope has been explicitly agreed and named in the certificate.
 
-Any of the above requires a **Redistribution licence** (§11–§13) in addition to, or
-instead of, the Commercial licence.
+Any of those needs a **Redistribution licence** instead of, or alongside, Commercial — see
+§4.
 
-### 2b. Redistribution (Standard, Enterprise)
+### 3.1 The four Commercial tiers
 
-In addition to internal use, a Redistribution licence grants the right to:
+| Tier | Employees | |
+|---|---|---|
+| **Small** | 1–49 | Same model as every Commercial tier below, sized for a small organisation: one legal entity, internal use, non-redistributable. |
+| **Medium** | 50–249 | Same model, applied to a mid-sized organisation. Still organisation-based, internal-use, single legal entity, non-redistributable. |
+| **Large** | 250–999 | Same model, applied to a larger organisation. Still limited to the internal use of the one authorised legal entity. |
+| **Enterprise** | 1,000+, **or** any Corporate Group scope | Covers at least one of: an organisation of 1,000+ employees; an organisation belonging to a corporate group; a use case that needs a group-wide perimeter; use by more than one legal entity of the same group, when explicitly authorised. May be named **Enterprise / Group Commercial Licence** in the certificate, which must state exactly which legal entities are included. |
 
-1. incorporate Iris, in whole or in part, into your own products and services that reach
-   third parties;
-2. distribute it in binary or source form as part of your product, with no obligation to
-   publish your own source;
-3. sublicense these rights to your end users **solely as part of your product**, and not
-   as a standalone competing tool.
+Belonging to a large group does not, by itself, let a small subsidiary's Small-tier
+licence cover the rest of the group. A group-wide perimeter is never implied — it must be
+explicitly agreed and named entity by entity. See §3.3.
 
-You also receive the full source of the licensed version, and the right to modify it with
-no obligation to contribute anything back.
+### 3.2 Employee count
 
-Neither licence grants rights to the third-party components in §20.
+Unless the applicable Enterprise / Group agreement states a different scope:
+
+> Employee count refers to the total number of employees of the licensed legal entity.
+
+It does **not** automatically include customers, end users, suppliers, partners, or
+external consultants.
+
+### 3.3 Corporate Group
+
+A **Corporate Group** is a set of companies directly or indirectly controlled by the same
+parent company, or otherwise part of the same corporate structure, as defined in the
+applicable agreement.
+
+Membership in a group is not, by itself, authorisation for the group. A small company
+belonging to a large group cannot use a Small-tier licence to extend rights to the rest of
+the group — a group-wide perimeter must be expressly authorised and stated in the
+Enterprise certificate.
 
 ---
 
-## 3. Price list
+## 4. What the Redistribution licence grants
 
-All prices in **EUR, excluding VAT**, per **licensed legal entity**. A Commercial licence
-below Enterprise covers exactly that entity — subsidiaries and other group companies are
-not automatically included, see §10. Seats are never counted: you are not billed per
-developer, per user or per installation.
+A **Redistribution licence** is required whenever Iris, or any part of it, is passed on
+to a third party — regardless of organisation size. Examples:
+
+- incorporation into another piece of software;
+- embedding;
+- distribution alongside a proprietary product;
+- distribution to customers or to end users;
+- commercialisation of a derivative product;
+- integration into a proprietary application;
+- OEM scenarios;
+- distribution as a component of a commercial solution.
+
+"OEM" is used above as an example of a Redistribution scenario, not as a separate category
+of its own — see §14.
+
+Subject to payment and to the specific agreement, a Redistribution licence may grant:
+
+1. modification, integration and embedding rights;
+2. the right to distribute the result, in source or binary form, with no obligation to
+   publish your own source;
+3. the right to commercialise the resulting product;
+4. sublicensing of these rights to your own end users, **solely as part of your product**,
+   not as a standalone competing tool.
+
+It does **not** automatically grant: exclusivity; unlimited sublicensing; rights to the
+Project Owner's trademarks; rights to third-party dependencies (§11); or transfer of the
+licence to another party.
+
+### 4.1 Redistribution — Standard
+
+For ordinary commercial redistribution: software houses, ISVs, integrators, commercial
+developers, and businesses embedding Iris in a product, distributed to a non-exceptional
+number of customers or installations.
+
+### 4.2 Redistribution — Enterprise
+
+For redistribution at scale: large software houses and groups, worldwide distribution,
+high-volume products, millions of users or installations, large-scale commercial
+platforms, and large OEM programmes.
+
+Unlike Commercial, this tier is **not** primarily sized by employee count. The relevant
+factors, weighed per case in the agreement, include: number of products; number of
+customers; number of installations; distribution volume; number of end users; territory;
+the product's revenue; number of legal entities involved; and the level of support
+required. The exact perimeter is defined in the commercial agreement, not by a fixed
+threshold in this document.
+
+---
+
+## 5. Price list
+
+All prices in **EUR, excluding VAT**, per **licensee organisation** — the legal entity and,
+where the tier says so, the agreed group perimeter. Seats are never counted: you are not
+billed per developer, per user or per installation.
 
 | Tier | Price | Scope |
 |---|---:|---|
 | **Community** | **Free** | Everything Iris does, under AGPL-3.0. Unlimited internal use. |
-| **Commercial — Small** | **€1,500 / year** | 1–49 employees. Internal use, one legal entity. |
-| **Commercial — Medium** | **€3,000 / year** | 50–249 employees. Internal use, one legal entity. |
-| **Commercial — Large** | **€5,500 / year** | 250–999 employees. Internal use, one legal entity. |
-| **Commercial — Enterprise** | **from €9,000 / year** | 1,000+ employees, or Corporate Group scope as defined in the certificate. |
-| **Redistribution — Standard** | **€4,000 / year** | Ordinary commercial redistribution — see §12. |
-| **Redistribution — Enterprise** | **from €15,000 / year** | Large-scale redistribution, scope set by the agreement — see §13. |
-| **Perpetual — Commercial (Small or Medium)** | **€5,000** one-off | Bought once, covers the major version current at purchase. Large/Enterprise: quoted separately. |
-| **Perpetual — Redistribution (Standard)** | **from €12,000** one-off | Bought once, covers the major version current at purchase. Enterprise: quoted separately. |
+| **Commercial — Small** | **€1,500 / year** | 1–49 employees. Closed-source internal use, one legal entity. |
+| **Commercial — Medium** | **€3,000 / year** | 50–249 employees. Same model as Small. |
+| **Commercial — Large** | **€5,500 / year** | 250–999 employees. Same model as Small and Medium. |
+| **Commercial — Enterprise** | **from €9,000 / year** | 1,000+ employees, or a group-wide perimeter. Unlimited internal products and services within the agreed scope. Written answers to procurement and legal questionnaires. |
+| **Redistribution — Standard** | **€4,000 / year** | Ordinary commercial redistribution: embed it in a product you sell, or run it as a hosted service for your customers. |
+| **Redistribution — Enterprise** | **from €15,000 / year** | Large-scale redistribution: worldwide distribution, high-volume products, large OEM programmes. Scope priced per case. |
+
+### Perpetual option
+
+A perpetual licence is bought once and never renews. It covers **the major version current
+at the date of purchase**, in perpetuity, together with every patch and minor release
+within that major version. Moving to a later major version is a new purchase.
+
+It is priced at **three times the annual rate** of the same tier, and is offered on the
+four fixed-price tiers only — both Enterprise tiers are negotiated and priced per case
+instead.
+
+| Tier | Perpetual price (one-off) |
+|---|---:|
+| Commercial — Small | **€4,500** |
+| Commercial — Medium | **€9,000** |
+| Commercial — Large | **€16,500** |
+| Redistribution — Standard | **€12,000** |
+
+Support (§6) runs for **twelve months** from a perpetual purchase, and can be renewed
+afterwards at 20% of the annual rate of the same tier. The licence itself does not expire
+when support does.
 
 ### What every paid licence includes
 
-The same four things, at every tier above Community:
+The same commitments, at every tier above Community:
 
-- **Email support** — see §15. Always included, never sold separately to a paying customer.
-- **Updates for the whole term**, and a **perpetual fallback**: every version released while
-  your subscription is active stays licensed to you forever. If the subscription lapses you
-  keep running what you had, you simply stop receiving new versions under commercial terms.
+- **Email support** — see §6. Always included, never sold separately to a paying customer.
+- **Updates for the whole term.** Every version released while your subscription is active
+  is licensed to you; there is no separate charge for upgrading within a term.
 - **No retroactive charge.** Renewals are priced at the rate in force when you first bought,
   for as long as you renew without a gap.
 - **Cancel any time.** No notice period, no auto-renewal trap. An invoice is issued per
@@ -158,175 +250,16 @@ The same four things, at every tier above Community:
 
 ---
 
-## 4. Support
+## 6. Support
 
 **Every paying customer gets support. It is included in the price, at every paid tier, and
 it runs over email.** There is no support product to buy separately and no tier that leaves
-you on your own. Response targets are detailed in §15.
-
----
-
-## 5. Commercial — Small
-
-**1–49 employees.**
-
-For organisations of small size. As described in §2a, the licence covers one legal entity,
-internal use, authorised internal users and authorised internal installations. It does not
-automatically include redistribution, OEM, embedding in a distributed product, sublicensing,
-or use by other companies in the same group.
-
-## 6. Commercial — Medium
-
-**50–249 employees.**
-
-The same model as the Small tier (§2a, §5), applied to organisations with 50–249 employees.
-The licence remains organisation-based, internal-use, single legal entity, and
-non-redistributable.
-
-## 7. Commercial — Large
-
-**250–999 employees.**
-
-The same model as the Small and Medium tiers, applied to organisations with 250–999
-employees. The licence continues to be limited to the internal use of the licensed legal
-entity.
-
-## 8. Commercial — Enterprise
-
-**1,000+ employees, OR Corporate Group.**
-
-This tier covers at least one of the following:
-
-1. an organisation with 1,000 or more employees;
-2. an organisation that belongs to a Corporate Group (§10);
-3. use that requires a group-wide perimeter;
-4. use by more than one legal entity of the same group, where expressly authorised.
-
-The Enterprise tier may be named **Enterprise / Group Commercial License** in the
-certificate. The agreement must clearly state which legal entities are included.
-
-Belonging to a corporate group does not by itself mean every company in that group is
-authorised: the perimeter must be explicitly defined in the certificate (see §10).
-
-## 9. Employee Count
-
-The criterion used to determine the Commercial tier.
-
-Default rule:
-
-> Employee count refers to the total number of employees of the licensed legal entity,
-> unless the applicable Enterprise / Group agreement defines a different scope.
-
-The count does **not** automatically include:
-
-- customers;
-- end users;
-- suppliers;
-- partners;
-- external consultants.
-
-## 10. Corporate Group
-
-A **Corporate Group** is a set of companies directly or indirectly controlled by the same
-parent company, or otherwise belonging to the same corporate structure as defined by the
-agreement.
-
-A small company that belongs to a large group cannot use a Small (or Medium, or Large)
-licence to automatically extend those rights to the rest of the group. A group-wide
-perimeter must be expressly authorised — see §8, Commercial — Enterprise.
-
----
-
-## 11. Redistribution
-
-A Redistribution licence is distinct from a Commercial licence. It is needed whenever the
-licensee wants to use the project in a scenario where the software, or part of it, is
-distributed to third parties.
-
-Examples:
-
-- incorporation into another piece of software;
-- embedding;
-- distribution alongside a proprietary product;
-- distribution to customers;
-- distribution to end users;
-- commercialisation of a derivative product;
-- integration into a proprietary application;
-- OEM scenarios;
-- distribution as a component of a commercial solution.
-
-The term **OEM** may be used as an example of a Redistribution scenario; it is not treated
-as a separate category — see §14, Terminology.
-
-## 12. Redistribution — Standard
-
-For ordinary commercial distribution scenarios.
-
-Examples:
-
-- software houses;
-- ISVs;
-- integrators;
-- commercial developers;
-- companies embedding the project in a product;
-- distribution to a non-exceptional number of customers or installations.
-
-Depending on the specific terms of the agreement, the licence may allow: modification,
-integration, embedding, distribution, and commercialisation of the resulting product.
-
-It does not automatically grant: exclusivity, unlimited sublicensing, trademark rights,
-rights over the dependencies (§20), or transfer of the licence.
-
-## 13. Redistribution — Enterprise
-
-For large-scale redistribution scenarios.
-
-Examples:
-
-- large software houses;
-- large groups;
-- worldwide distribution;
-- products with large installation volumes;
-- millions of users or installations;
-- large-scale commercial platforms;
-- large OEM programmes;
-- widely distributed commercial products.
-
-The precise scope is left to the commercial agreement, and the criterion is not
-necessarily based on employee count. More relevant factors for Redistribution include:
-
-- number of products;
-- number of customers;
-- number of installations;
-- distribution volume;
-- end users;
-- territory;
-- product revenue;
-- number of legal entities;
-- support required.
-
-## 14. Terminology
-
-Preferred terms: **Community**, **Commercial**, **Redistribution**.
-
-**OEM** is avoided as a top-level category. It may still be used in documentation as an
-example, worded along the lines of:
-
-> OEM, embedded and other redistribution scenarios are covered by the Redistribution
-> License.
-
-This keeps the category general enough to apply to different commercial models rather than
-locking it to one distribution pattern.
-
----
-
-## 15. Support
+you on your own.
 
 | Tier | Support | Target first response |
 |---|---|---|
 | Community | GitHub Issues, best effort | — |
-| Commercial — Small | Email | 5 business days |
-| Commercial — Medium | Email | 4 business days |
+| Commercial — Small / Medium | Email | 5 business days |
 | Commercial — Large | Email | 3 business days |
 | Commercial — Enterprise | Email, private channel | 2 business days |
 | Redistribution — Standard | Email | 3 business days |
@@ -341,11 +274,11 @@ What "support" means here, stated plainly so nothing is inferred:
   human reply, not how quickly a defect is resolved. Confirmed bugs are prioritised over
   new features, but no repair window is guaranteed at any tier.
 - **Not included:** building your workflow for you, writing features, or operating the
-  software on your behalf. That is custom development — see §16.
+  software on your behalf. That is custom development — see §7.
 
 ---
 
-## 16. Custom development
+## 7. Custom development
 
 Anything that changes the software for you — a new feature, an integration, a format, a
 connector, a bespoke build — is **never included in a licence fee**, at any tier.
@@ -356,8 +289,8 @@ It is **available on request and quoted separately**, per project:
 2. You get a written scope, a fixed price and a delivery window before any work starts.
 3. Nothing is invoiced until you accept that quote.
 
-The indicative day rate for Iris is **€600 / day**, used to size a quote; the quote
-itself is fixed-price, not time-and-materials.
+The indicative day rate for Iris is **€600 / day**, used to size a quote;
+the quote itself is fixed-price, not time-and-materials.
 
 Two things worth knowing before you ask:
 
@@ -369,22 +302,24 @@ Two things worth knowing before you ask:
 
 ---
 
-## 17. How to buy
+## 8. How to buy
 
 1. **Ask.** Write to **[marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com?subject=Iris%20commercial%20licence%20enquiry)**.
-   Say what you intend to build and roughly how big your organisation is. Use email rather
-   than a public issue: what you are building is usually not something you want indexed.
-2. **Confirm the tier.** You get a written statement of which tier applies and why, so
-   there is no ambiguity later.
+   Say what you intend to build, roughly how big your organisation is (for Commercial), or
+   how the software will reach third parties (for Redistribution). Use email rather than a
+   public issue: what you are building is usually not something you want indexed.
+2. **Confirm the tier.** You get a written statement of which tier applies and why — for
+   Commercial, the employee count that was used; for Redistribution, the factors from §4.2
+   that were weighed — so there is no ambiguity later.
 3. **Invoice.** Issued in EUR, payable by bank transfer within 30 days.
 4. **Certificate.** On payment you receive a signed licence certificate naming your
-   organisation, the tier, the term and the covered products. That certificate — not a key
-   file — is the licence.
+   organisation (and, at Enterprise scope, every included legal entity), the tier, the term
+   and the covered products. That certificate — not a key file — is the licence.
 
 To get a concrete quote in one round instead of three, include: your **company** and the
-legal entity that would hold the licence; the **intended use** (internal, embedded in a
-product you sell, or operated as a service); **deployment scale**; the **tier** you think
-fits; and whether you need **custom development**.
+legal entity that would hold the licence; the **intended use** (internal, or distributed to
+third parties); **organisation size** or **distribution scale**, as applicable; the **tier**
+you think fits; and whether you need **custom development**.
 
 There is **no licence key, no activation, no phone-home.** The software behaves identically
 whether or not you have paid. Compliance is contractual and self-declared; there is no
@@ -392,9 +327,10 @@ audit clause.
 
 ---
 
-## 18. Term, warranty and liability
+## 9. Term, warranty and liability
 
-- **Term.** Annual from the invoice date, unless the tier says otherwise.
+- **Term.** Annual from the invoice date, unless the certificate says otherwise, or
+  perpetual where the perpetual option in §5 was purchased.
 - **Updates.** Included for the duration of the term.
 - **Warranty.** Iris is provided **as is**. No warranty of merchantability, fitness for a
   particular purpose, or non-infringement. Iris sends real email to real recipients: read the [Disclaimer](README.md#disclaimer).
@@ -402,36 +338,40 @@ audit clause.
   fees paid in the twelve months preceding the claim**. Liability is not excluded where it
   cannot lawfully be excluded — death or personal injury caused by negligence, fraud, or
   wilful misconduct.
-- **Indemnity.** No IP indemnity at Commercial Small/Medium/Large, or at Redistribution
-  Standard. Commercial Enterprise, Redistribution Enterprise, and perpetual licences may
-  include one; ask, and it will be stated in the certificate.
+- **Indemnity.** No IP indemnity at Commercial Small/Medium/Large or Redistribution
+  Standard. Commercial Enterprise and Redistribution Enterprise may include one; ask, and
+  it will be stated in the certificate.
 - **Governing law.** Italian law, courts of Milan, unless the certificate names otherwise.
 
 ---
 
-## 19. What is *not* included
+## 10. What is *not* included
 
 Stated plainly, so nobody discovers it after paying:
 
 - **No SLA on the software itself.** Response targets are commitments about replying to
   you, not about fixing anything within a window.
-- **No custom development.** Quoted separately — see §16.
+- **No custom development.** Quoted separately — see §7.
 - **No guarantee of future features.** The roadmap is not a contract.
 - **No exclusivity.** The same licence is available to your competitors.
-- **No rights to third-party components.** See §20.
-- **No responsibility for what you send.** Recipient consent, content and compliance with the rules on electronic communications and personal data —
+- **No rights to third-party components.** See §11.
+- **No responsibility for what you send.** Recipient consent, message content and
+  compliance with the rules on electronic communications and personal data —
   including the GDPR — remain entirely yours.
+- **No implied redistribution rights on a Commercial licence**, and no implied
+  group-wide scope without an explicit Enterprise perimeter. See §3.
 
 ---
 
-## 20. Third-party components
+## 11. Third-party components
 
 A commercial licence covers Iris's own code. Its dependencies are separately licensed and
 a commercial licence cannot and does not relicense them.
 
 | Component | Licence | Commercial redistribution |
 |---|---|---|
-| pypdf | BSD-3-Clause | ✅ Permissive |
+| Python, `tkinter` | PSF License | ✅ Permissive |
+| `pypdf` | BSD-3-Clause | ✅ Permissive — used for PDF reading |
 | openpyxl | MIT | ✅ Permissive |
 | xlrd | BSD-3-Clause | ✅ Permissive |
 | python-docx | MIT | ✅ Permissive |
@@ -440,24 +380,24 @@ a commercial licence cannot and does not relicense them.
 | pywin32 | PSF-style | ✅ Permissive, Windows only |
 | PyInstaller | GPL-2.0 **with bootloader exception** | ✅ The exception exists to allow proprietary frozen applications |
 
-**Every dependency is permissively licensed and safe to redistribute in a commercial
-product.** No dependency imposes copyleft, field-of-use or anti-commercial conditions.
+**Every dependency is permissively licensed and safe to redistribute in a
+commercial product.** No dependency imposes copyleft, field-of-use or
+anti-commercial conditions.
 
-> **Resolved: the PyMuPDF problem.** PDF reading used to depend on `PyMuPDF`, dual-licensed
-> by Artifex under **AGPL-3.0 or a paid commercial licence** — the same model as Iris
-> itself. A commercial Iris licence removes *Iris's* copyleft obligation but could never
-> remove PyMuPDF's, so a closed-source product shipping PDF support would have needed a
-> second commercial licence from Artifex. The reader now uses
-> [`pypdf`](https://github.com/py-pdf/pypdf) (BSD-3-Clause), which extracts the same page
-> text with no copyleft attached. Nothing in the dependency tree now restricts commercial
-> sale.
+> **Resolved: the PyMuPDF problem.** PDF reading used to depend on `PyMuPDF`,
+> dual-licensed by Artifex under **AGPL-3.0 or a paid commercial licence** — the
+> same model as Iris itself. A commercial Iris licence removes *Iris's* copyleft
+> obligation but could never remove PyMuPDF's, so a closed-source product shipping
+> PDF support would have needed a second commercial licence from Artifex. The
+> reader now uses [`pypdf`](https://github.com/py-pdf/pypdf) (BSD-3-Clause), which
+> extracts the same page text with no copyleft attached.
 
 Verify these against the versions you actually ship. They are listed in good faith, current
 as at the version of this document, and are not a legal opinion.
 
 ---
 
-## 21. Contributors
+## 12. Contributors
 
 Contributions are accepted under the [Contributor License Agreement](CLA.md), which grants
 the Project Owner the right to license contributed code under both AGPL-3.0 and commercial
@@ -469,7 +409,7 @@ commercial licence to Iris for their own use, as thanks.
 
 ---
 
-## 22. Contact
+## 13. Contact
 
 **Commercial licensing, quotes and support for paying customers:
 [marco.lombardo@gmail.com](mailto:marco.lombardo@gmail.com?subject=Iris%20commercial%20licence%20enquiry)**
@@ -477,6 +417,22 @@ commercial licence to Iris for their own use, as thanks.
 For anything that is *not* a purchase — a bug, a feature request, a question about which
 row of §1 you fall into — the [issue tracker](https://github.com/MarcoLombardoDev/Iris/issues) is the better channel, and the
 answer helps whoever asks next.
+
+---
+
+## 14. Terminology
+
+This document uses **Community**, **Commercial** and **Redistribution** as the three
+licence families. **OEM** is deliberately not used as a top-level category: it appears only
+as an example, because it describes one *scenario* within Redistribution, not a distinct
+set of rights —
+
+> OEM, embedded and other redistribution scenarios are covered by the Redistribution
+> Licence.
+
+Naming it this way keeps the category general enough to apply to whichever commercial
+model a redistributor actually uses, instead of forcing OEM deals through a differently
+worded licence than an equivalent embedding or hosting deal.
 
 ---
 
