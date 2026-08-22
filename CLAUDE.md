@@ -160,14 +160,32 @@ deliberately share **the same commercial offer**, differing only in price, scope
 and the third-party review. Changing the shape of the offer here means changing it in all
 three, or the alignment is lost.
 
-The parts that must stay identical:
+**As of 2026-08-22, Iris moved to a new tier structure that Argus and Proteus have not
+adopted yet** — the three products are temporarily out of sync on this one point. The new
+shape, once ported to the other two, is:
 
-- **`COMMERCIAL-LICENSE.md`, same eleven sections**, same tier ladder: Community /
-  Internal / OEM & Redistribution / Enterprise, plus a perpetual option on Internal or
-  OEM scope.
+```
+Community        AGPL-3.0, free
+Commercial        Small (1–49 employees) · Medium (50–249) · Large (250–999) · Enterprise (1,000+ / group)
+Redistribution     Standard · Enterprise
+```
+
+`COMMERCIAL-LICENSE.md` is now 22 sections instead of 11: Commercial and Redistribution
+each cover four/two tiers as their own numbered section (§5–§8, §12–§13), plus dedicated
+sections for Employee Count (§9), Corporate Group (§10) and Terminology (§14, which asks
+that **OEM** be used only as an example of a Redistribution scenario, never as a top-level
+category). Perpetual is still offered, scoped to either branch instead of to "Internal or
+OEM scope". Do not re-collapse this back to the old four-tier ladder without checking
+whether Argus/Proteus have migrated too — the alignment note above is the source of truth
+for whether they have.
+
+The parts that still must stay identical across all three:
+
 - **Email is the only commercial channel.** GitHub Issues are for bugs and features.
-- **Email support is included at every paid tier** (5 / 3 / 2 business days), never sold
-  separately to a paying customer.
+- **Email support is included at every paid tier**, response time shrinking with tier
+  size (5 / 3 / 2 business days on Argus/Proteus's still-unmigrated ladder; 5 / 4 / 3 / 2
+  across Iris's Commercial Small→Enterprise, 3 / 2 on Redistribution Standard/Enterprise —
+  see `COMMERCIAL-LICENSE.md` §15), never sold separately to a paying customer.
 - **Custom development is never included**, at any tier, and is always quoted separately
   per project at a fixed price agreed before work starts.
 - Perpetual fallback, no retroactive price rise, cancel any time, **no licence key and no

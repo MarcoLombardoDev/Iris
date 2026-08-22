@@ -444,32 +444,41 @@ AGPL-3.0 works for you, you are done reading — Iris is yours to use.
 | Fork & publish on GitHub | ✅ Yes | Must stay AGPL-3.0 |
 | Redistribute it, modified or not, under AGPL-3.0 | ✅ Yes | Must ship the source |
 | Deploy a modified version as a network service | ✅ Yes | Must publish the source of your modified version |
-| Integrate into a **closed-source product** | ⚠️ Restricted | Requires a commercial licence |
-| Offer as a **proprietary SaaS** without sharing source | ❌ Not under AGPL | Requires a commercial licence |
-| **Resell** it, or ship it inside a product you sell | ❌ Not under AGPL | Requires a commercial licence |
+| Integrate into a **closed-source product** | ⚠️ Restricted | Requires a Commercial licence |
+| Offer as a **proprietary SaaS** without sharing source | ❌ Not under AGPL | Requires a Commercial licence |
+| Embed it in, or ship it inside, a product you **sell to third parties** | ❌ Not under AGPL | Requires a Redistribution licence |
 
 The dividing line is one rule: **AGPL-3.0 is free as long as the source stays open.**
 
 
 ### Commercial Licensing
 
-The commercial licence removes the copyleft obligation, and nothing else. It is for
-organisations embedding Iris in a proprietary product, running a modified version as a
-service without publishing the source, reselling it under their own terms — or simply
-barred by internal policy from using AGPL code.
+The commercial offer removes the copyleft obligation, and nothing else. It splits into two
+branches that answer different questions — **Commercial**, sized by how big the
+organisation using Iris internally is, and **Redistribution**, needed whenever the
+software (or a derivative) reaches third parties, regardless of size:
+
+```
+Community        AGPL-3.0, free
+Commercial        Small (1–49 employees) · Medium (50–249) · Large (250–999) · Enterprise (1,000+ / group)
+Redistribution     Standard · Enterprise
+```
 
 | Tier | Price | Scope |
 |---|---:|---|
 | **Community** | **Free** | Everything Iris does, under AGPL-3.0. Unlimited internal use. |
-| **Internal** | **€2,500 / year** | Closed-source internal use, one legal entity. No redistribution. |
-| **OEM / Redistribution** | **€4,000 / year** | Embed it in a product you sell, or run it as a hosted service. |
-| **Enterprise** | **from €9,000 / year** | Group-wide, unlimited products, procurement and legal questionnaires answered. |
-| **Perpetual** | **€8,000** / **from €12,000** one-off | Internal or OEM scope, bought once, for the major version current at purchase. |
+| **Commercial — Small** | **€1,500 / year** | 1–49 employees, internal use, one legal entity. |
+| **Commercial — Medium** | **€3,000 / year** | 50–249 employees, internal use, one legal entity. |
+| **Commercial — Large** | **€5,500 / year** | 250–999 employees, internal use, one legal entity. |
+| **Commercial — Enterprise** | **from €9,000 / year** | 1,000+ employees, or a Corporate Group scope. |
+| **Redistribution — Standard** | **€4,000 / year** | Embed it in a product you sell, or ship it to customers. |
+| **Redistribution — Enterprise** | **from €15,000 / year** | Large-scale distribution — worldwide, high volume, or OEM. |
+| **Perpetual** | from **€5,000** / **€12,000** one-off | Commercial or Redistribution scope, bought once, for the major version current at purchase. |
 
 The same commitments apply at every paid tier:
 
-- **Email support is always included** — 5 business days at Internal, 3 at OEM, 2 at
-  Enterprise. It is never sold separately to a paying customer.
+- **Email support is always included** — 5 business days at Commercial Small down to 2 at
+  Commercial or Redistribution Enterprise. It is never sold separately to a paying customer.
 - **Custom development is never included**, at any tier. It is available on request and
   **quoted separately**, per project, at a fixed price agreed before work starts
   (indicative day rate: **€600 / day**).
@@ -478,14 +487,17 @@ The same commitments apply at every paid tier:
 - **50% off** for organisations under 10 employees and €1M revenue. **Free** commercial
   licences for non-profits, academia and published research — ask.
 
-Prices are per organisation, excluding VAT. **Seats are never counted.** Full terms, what is
-*not* included, and the third-party component review:
-**[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
+A Commercial licence, below Enterprise, covers exactly one legal entity: it does not
+automatically extend to other companies in the same group, and it does not include
+redistribution, OEM or embedding rights — those need a Redistribution licence on top.
+Prices are per licensed legal entity, excluding VAT. **Seats are never counted.** Full
+terms, the Employee Count and Corporate Group definitions, and the third-party component
+review: **[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
 
 > ✅ **Every dependency is permissively licensed.** Nothing in the tree imposes copyleft on
 > a commercial licensee — the PDF reader was moved from PyMuPDF (AGPL / Artifex commercial)
 > to `pypdf` (BSD-3-Clause) precisely so this stays true. See
-> [§9](COMMERCIAL-LICENSE.md#9-third-party-components).
+> [§20](COMMERCIAL-LICENSE.md#20-third-party-components).
 
 ### How to get in touch
 

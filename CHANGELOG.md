@@ -4,6 +4,21 @@ All notable changes to this project, most recent first.
 
 ## [Unreleased]
 
+### Changed
+- **The commercial licensing structure was rebuilt around two independent questions**
+  instead of one flat tier ladder: *how big is the organisation using Iris internally*
+  (**Commercial** — Small / Medium / Large / Enterprise, by employee count or Corporate
+  Group scope) and *does the software reach third parties at all* (**Redistribution** —
+  Standard / Enterprise, replacing the old "OEM / Redistribution" tier). A Commercial
+  licence below Enterprise no longer implies any redistribution, OEM, embedding or
+  sublicensing right, and no longer extends to other companies in the same group —
+  those need a Redistribution licence and/or the Enterprise/Group scope, both now
+  explicitly defined (`COMMERCIAL-LICENSE.md` §2, §9–§10).
+  `COMMERCIAL-LICENSE.md` grew from 11 to 22 sections; **OEM** is kept only as an example
+  of a Redistribution scenario, not as a category (§14). README's licensing section and
+  `CLAUDE.md`'s cross-product alignment note were updated to match; Argus and Proteus have
+  not been migrated to this structure yet.
+
 ### Fixed
 - **The GitHub Release published for a version tag had no title or notes.**
   `.github/workflows/build.yml` never set them, so a release showed up with
