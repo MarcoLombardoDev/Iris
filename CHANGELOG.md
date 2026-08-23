@@ -23,6 +23,18 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   answers without needing a display.
 
 ### Changed
+- **Every Python source file carries the same seven-line licence header**, in
+  the same place: the product name, the copyright line, an
+  `SPDX-License-Identifier: AGPL-3.0-or-later` a tool can read, a pointer to
+  LICENSE for the warranty disclaimer, and a pointer to COMMERCIAL-LICENSE.md
+  for the commercial option.
+  Ten of Iris's 24 files carried a longer, differently worded notice; it was
+  replaced rather than left alongside.
+  The `# -*- coding: utf-8 -*-` declarations went with it: they have meant
+  nothing since Python 3, and Orion's ruff configuration flags them as UP009.
+  Nothing but comments changed — the parsed syntax tree of all 152 files is
+  identical before and after, which is how that was checked rather than
+  assumed.
 - **`LICENSE` is now the verbatim FSF text of the AGPL-3.0.** The previous copy
   was reflowed to long lines, which the licence's own header does not permit
   ("changing it is not allowed") and which stops GitHub recognising it.
