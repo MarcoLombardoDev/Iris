@@ -100,6 +100,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   not been migrated to this structure yet.
 
 ### Fixed
+- **Three libraries in the Windows archive had no licence stated, and two of
+  them had no notice either.** The build carries Tcl/Tk **9**, whose Tk library
+  is `tcl9tk90.dll` — a pattern written around 8.6's `tcl86t.dll` matched
+  neither it nor the `zlib1.dll` and `libtommath.dll` that come with it. zlib's
+  and LibTomMath's texts are vendored and now travel in the archive; SQLite,
+  which python.org's Windows build also carries, is public domain and so is
+  named rather than reproduced. The matcher no longer tries to predict Tcl's
+  numbering, having already been wrong about it once. None of this is visible
+  on Linux, where dpkg answers for all of them.
 - **The per-platform inventory was missing from the Windows and macOS
   archives.** `tools/licence_inventory.py` called `dpkg-query` unguarded, and
   `subprocess.run` *raises* on a missing executable rather than returning
