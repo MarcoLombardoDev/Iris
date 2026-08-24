@@ -569,7 +569,7 @@ review: **[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
 > ⚠️ **Every *source* dependency is permissively licensed** — the PDF reader was
 > moved from PyMuPDF (AGPL / Artifex commercial) to `pypdf` (BSD-3-Clause)
 > precisely so this stays true. A downloadable build is a different question: it
-> is a frozen bundle of 82 native libraries, most of which no `requirements.txt`
+> is a frozen bundle of 109 native libraries, most of which no `requirements.txt`
 > mentions. All of them are inventoried, with the evidence for each licence, in
 > [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md), and the licence texts ship
 > inside the archive. What that means for a redistributor is
