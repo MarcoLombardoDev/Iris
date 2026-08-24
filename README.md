@@ -566,9 +566,13 @@ Prices are per licensed legal entity, excluding VAT. **Seats are never counted.*
 terms, the Employee Count and Corporate Group definitions, and the third-party component
 review: **[COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)**.
 
-> ✅ **Every dependency is permissively licensed.** Nothing in the tree imposes
-> copyleft on a commercial licensee — the PDF reader was moved from PyMuPDF (AGPL /
-> Artifex commercial) to `pypdf` (BSD-3-Clause) precisely so this stays true. See
+> ⚠️ **Every *source* dependency is permissively licensed** — the PDF reader was
+> moved from PyMuPDF (AGPL / Artifex commercial) to `pypdf` (BSD-3-Clause)
+> precisely so this stays true. A downloadable build is a different question: it
+> is a frozen bundle of 82 native libraries, most of which no `requirements.txt`
+> mentions. All of them are inventoried, with the evidence for each licence, in
+> [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md), and the licence texts ship
+> inside the archive. What that means for a redistributor is
 > [§11](COMMERCIAL-LICENSE.md#11-third-party-components).
 
 ### How to get in touch

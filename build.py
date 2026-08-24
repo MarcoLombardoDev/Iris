@@ -75,6 +75,10 @@ WINDOWS_HIDDEN_IMPORTS = [
     "win32timezone",
 ]
 
+#: Modules kept out of the bundle. Everything here but the last two is about
+#: size. Keep this list and the one in Iris.spec together: build.py generates
+#: its own spec into build/, so the two are separate inputs to the same
+#: decision and nothing but a test notices when they disagree.
 EXCLUDES = [
     "matplotlib",
     "numpy",
@@ -88,6 +92,14 @@ EXCLUDES = [
     "IPython",
     "sphinx",
     "pytest",
+    # The standard library's optional readline extension links libreadline —
+    # GPL-3.0-or-later, with no linking exception — so leaving it in put GPL-3
+    # code inside an archive COMMERCIAL-LICENSE.md offers for redistribution
+    # inside closed-source products. libpython does not link it; only this
+    # module does, and Iris never reads a line from an interactive prompt.
+    "readline",
+    # Imports readline and exists for nothing else.
+    "rlcompleter",
 ]
 
 

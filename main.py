@@ -36,12 +36,17 @@ def _show_startup_error(exc):
 
 
 def _parse_args():
-    """Handle ``--version`` / ``--help`` and return an exit code, or None.
+    """Handle ``--version``, ``--self-check`` and ``--help``.
 
-    Iris is a GUI application, but the release workflow smoke-tests every
-    bundle it builds by running it with ``--version``: a binary that cannot
-    even report its own version is a broken binary, and that has to be caught
-    before the asset is offered for download rather than after.
+    Returns an exit code when one of them was asked for, or None to carry on
+    and open the window.
+
+    Iris is a GUI application, but the release workflow runs every bundle
+    it builds before offering it for download. ``--version`` is the cheap half
+    of that — a binary that cannot report its own version is broken — and
+    ``--self-check`` is the half that means something: it starts Tk and writes
+    a file, which is where a frozen bundle actually breaks. Both are parsed
+    here, before the GUI is imported, so ``--version`` stays instant.
     """
     parser = argparse.ArgumentParser(
         prog=APP_NAME,
@@ -54,9 +59,26 @@ def _parse_args():
         action="store_true",
         help="print the version and exit",
     )
+    parser.add_argument(
+        "--self-check",
+        action="store_true",
+        help=(
+            "check a built bundle can start Tk and write and read back a message, then exit"
+        ),
+    )
+    parser.add_argument(
+        "--self-check-report",
+        metavar="FILE",
+        help="also write the self-check report here; a --windowed build has "
+             "no stdout to read it from",
+    )
     args, unknown = parser.parse_known_args()
     if unknown:
         parser.error(f"unrecognised arguments: {' '.join(unknown)}")
+    if args.self_check:
+        from iris import selfcheck
+
+        return selfcheck.run(args.self_check_report)
     if args.version:
         # Deliberately not argparse's own "version" action: that one writes to
         # sys.stdout unconditionally, and a windowed PyInstaller build on

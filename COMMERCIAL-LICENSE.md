@@ -365,35 +365,88 @@ Stated plainly, so nobody discovers it after paying:
 
 ## 11. Third-party components
 
-A commercial licence covers Iris's own code. Its dependencies are separately licensed and
-a commercial licence cannot and does not relicense them.
+A commercial licence covers Iris's own code. Everything Iris is built
+on is separately licensed by its own authors, and this licence cannot and does
+not relicense any of it. §10 applies: no rights to third-party components are
+granted here.
 
-| Component | Licence | Commercial redistribution |
+### The dependency that used to make this section a problem
+
+PDF reading used to depend on **PyMuPDF**, dual-licensed by Artifex under
+**AGPL-3.0 or a paid commercial licence** — the same model as Iris itself. A
+commercial Iris licence removes *Iris's* copyleft obligation but could never
+remove Artifex's, so a closed-source product shipping PDF support would have
+needed a second commercial licence from a third party, and the Redistribution
+tier could not deliver what it promised.
+
+**It no longer applies.** The reader uses
+[`pypdf`](https://github.com/py-pdf/pypdf) (BSD-3-Clause), which extracts the
+same page text with nothing attached. Nothing in Iris's source dependencies is
+copyleft.
+
+### What Iris depends on
+
+The seven packages Iris requires, plus the interpreter it runs on, the toolkit
+it draws with and the tool that freezes it, with the licence each declares in
+its own metadata at the versions pinned in `requirements.txt`:
+
+| Component | Licence | What it asks of you |
 |---|---|---|
-| Python, `tkinter` | PSF License | ✅ Permissive |
-| `pypdf` | BSD-3-Clause | ✅ Permissive — used for PDF reading |
-| openpyxl | MIT | ✅ Permissive |
-| xlrd | BSD-3-Clause | ✅ Permissive |
-| python-docx | MIT | ✅ Permissive |
-| Pillow | MIT-CMU (HPND) | ✅ Permissive |
-| ttkbootstrap | MIT | ✅ Permissive, optional |
-| pywin32 | PSF-style | ✅ Permissive, Windows only |
-| PyInstaller | GPL-2.0 **with bootloader exception** | ✅ The exception exists to allow proprietary frozen applications |
+| Python, standard library | PSF-2.0 | Attribution. Nothing further. |
+| Tcl/Tk, via `tkinter` | TCL (BSD-style) | Retain the copyright notices and include the licence verbatim in any distribution. |
+| pypdf | BSD-3-Clause | Reproduce the copyright notice in binary distributions. |
+| openpyxl | MIT | Reproduce the copyright notice. |
+| xlrd | BSD-3-Clause | Reproduce the copyright notice. |
+| python-docx (with lxml) | MIT (lxml: BSD-3-Clause) | Reproduce the copyright notices. |
+| Pillow | MIT-CMU (HPND) | Reproduce the copyright notice in binary distributions. |
+| ttkbootstrap | MIT AND (Apache-2.0 OR BSD-2-Clause) | Reproduce the notices. |
+| pywin32 (Windows only) | PSF-style | Attribution. |
+| PyInstaller | GPL-2.0-or-later **with the Bootloader Exception** | Nothing — see the table below. |
 
-**Every dependency is permissively licensed and safe to redistribute in a
-commercial product.** No dependency imposes copyleft, field-of-use or
-anti-commercial conditions.
+Every one of these is permissive. **No source dependency imposes copyleft,
+field-of-use or anti-commercial conditions.**
 
-> **Resolved: the PyMuPDF problem.** PDF reading used to depend on `PyMuPDF`,
-> dual-licensed by Artifex under **AGPL-3.0 or a paid commercial licence** — the
-> same model as Iris itself. A commercial Iris licence removes *Iris's* copyleft
-> obligation but could never remove PyMuPDF's, so a closed-source product shipping
-> PDF support would have needed a second commercial licence from Artifex. The
-> reader now uses [`pypdf`](https://github.com/py-pdf/pypdf) (BSD-3-Clause), which
-> extracts the same page text with no copyleft attached.
+### What a downloadable build actually contains
 
-Verify these against the versions you actually ship. They are listed in good faith, current
-as at the version of this document, and are not a legal opinion.
+The table above is Iris's **source** dependency list. It is not what a
+redistributor ships. A standalone build is a frozen bundle, and the bundle
+contains the transitive closure of everything those packages link — the
+libraries the wheels vendor, the interpreter and its extension modules, Tcl and
+Tk, and whatever else the build machine's linker resolved.
+
+A Linux build contains **82 native binaries**. Every one of them is
+inventoried, with the source of each licence determination, in
+**[THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md)**, and the licence texts
+themselves now ship inside the archive as `licenses/` — together with a copy of
+that inventory regenerated on the machine that built the archive you have.
+Grouped by what they require:
+
+| Class | What it asks of you |
+|---|---|
+| Permissive — MIT, BSD, ISC, Apache-2.0, Zlib, FreeType, CC0 | Reproduce the notices. |
+| Python and its extension modules — PSF-2.0 | Attribution. |
+| Tcl and Tk | Retain the copyright notices and include the licence verbatim. |
+| PyInstaller's bootloader — GPL-2.0-or-later **with the Bootloader Exception** | Nothing. The exception grants unlimited permission to embed the bootloader in a combined program and distribute it without restriction — which is exactly what a frozen application does. |
+| GCC runtime — GPL-3.0-or-later **with GCC Runtime Library Exception 3.1** | Nothing. The exception is what makes it distributable; without it a GPL-3 library would sit inside every build. |
+| Microsoft Visual C++ and Universal CRT runtime (Windows) | Microsoft's own redistributable terms — **not an open-source licence**, and a different legal basis from every other row here. |
+
+Until this version the list had one more row: `libreadline`, **GPL-3.0-or-later
+with no linking exception**, which PyInstaller collected along with the standard
+library's optional `readline` extension. A GPL-3 library inside an archive
+offered under this licence is the one combination a Redistribution tier cannot
+survive. Nothing in Iris used it; it is now excluded from the build, and a test
+fails if the exclusion is ever removed.
+
+Counts change with the build. The inventory is regenerated from the archives at
+each release rather than maintained by hand.
+
+### Verify against what you ship
+
+The determinations above and in THIRD-PARTY-LICENSES.md were made from package
+metadata and from the build machine's own copyright records, and each entry
+names its source so it can be re-checked. They are given in good faith, are
+current as at the version of this document, and are **not a legal opinion**.
+Verify them against the versions you actually ship.
 
 ---
 
