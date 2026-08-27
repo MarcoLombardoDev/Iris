@@ -8,6 +8,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- **A SHA-256 checksum beside every archive.** These builds are unsigned, so
+  Windows tells whoever downloads one that the publisher is unknown and offers
+  only "Don't run". Nothing in this repository can remove that — a
+  code-signing certificate is the only thing that does — but the warning asks
+  a question a checksum can answer: is this the file the build produced. Each
+  archive now ships with a `.sha256` in the format `sha256sum -c` reads, and
+  the release notes say how to use it and how to get past the warning rather
+  than only that the build is unsigned.
 - **The licence texts now travel inside the archive.** The v2.3.0 archives
   contained one executable and nothing else — a recursive search of all three for
   `LICENSE`, `COPYING` or `NOTICE` returned nothing, which every BSD and MIT

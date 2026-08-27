@@ -102,8 +102,37 @@ actually built. Unpack it, put the program in a folder of your choice and run it
 `config.ini` and `logs/` are created next to it on first use. No installation, and no
 Python needed.
 
-The builds are **unsigned**, so Windows SmartScreen and macOS Gatekeeper warn on first
-launch.
+### Windows and macOS will warn on first launch
+
+These builds carry **no code-signing certificate**. A certificate costs money every year
+and identifies a legal entity; Iris is one person's project given away under the AGPL,
+and the certificate is the one part of shipping software that cannot be done for nothing.
+So the operating system has no publisher to check, and says so.
+
+On **Windows**, Microsoft Defender SmartScreen shows *"Windows protected your PC"* and
+offers only **Don't run**. Click **More info**, then **Run anyway**.
+
+On **macOS**, Gatekeeper refuses to open an application from an unidentified developer.
+Right-click it and choose **Open**, or run `xattr -dr com.apple.quarantine Iris`.
+
+Neither warning means anything is wrong with the file. Both mean the same thing: nobody
+has paid to put a name on it.
+
+**Check the download instead.** Every archive is published with a `.sha256` file beside
+it, holding the checksum of the archive as the build machine produced it:
+
+```powershell
+Get-FileHash .\Iris-2.3.0-windows-x64.zip -Algorithm SHA256      # Windows
+```
+
+```sh
+sha256sum -c Iris-2.3.0-linux-x64.tar.gz.sha256                   # Linux
+shasum -a 256 -c Iris-2.3.0-macos-arm64.zip.sha256                # macOS
+```
+
+That is a weaker guarantee than a signature — it proves the file was not altered between
+the build and your disk, not who wrote it — but it is the part a signature would give you
+that can be given for free, and it is what the warning is actually asking about.
 
 > `.msg` generation through Outlook is Windows-only. The macOS and Linux builds write
 > standard `.eml` files instead, which Outlook opens anyway — see

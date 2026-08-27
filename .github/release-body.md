@@ -19,8 +19,27 @@ them to disk for review first.
 | Linux (x64) | `Iris-{{VERSION}}-linux-x64.tar.gz` |
 
 Each archive is built on that platform's own runner — no cross-compilation, no emulation.
-Unpack and run: no installation, and no Python needed. The builds are **unsigned**, so
-Windows SmartScreen and macOS Gatekeeper warn on first launch.
+Unpack and run: no installation, and no Python needed.
+
+### Windows will say the publisher is unknown
+
+It is meant to. These builds carry **no code-signing certificate**, so Microsoft Defender
+SmartScreen shows *"Windows protected your PC"* and offers only **Don't run**. Click
+**More info**, then **Run anyway**. Nothing is wrong with the download; SmartScreen is
+reporting that it has never seen this publisher, which is true.
+
+Because that warning asks you to trust a file you cannot check by looking at it, every
+archive ships with a `.sha256` beside it. In PowerShell:
+
+```powershell
+Get-FileHash .\Iris-{{VERSION}}-windows-x64.zip -Algorithm SHA256
+```
+
+The hash it prints must match the one inside `Iris-{{VERSION}}-windows-x64.zip.sha256`.
+If it does, the file is byte for byte what the build produced.
+
+On **macOS**, Gatekeeper refuses an unidentified developer the same way: right-click the
+application and choose **Open**, or run `xattr -dr com.apple.quarantine Iris`.
 
 Each archive unpacks to a folder holding the executable and a `licenses/` directory: the
 terms of everything Iris is built on, plus an inventory of every native library in the
