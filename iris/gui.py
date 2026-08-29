@@ -45,7 +45,23 @@ except Exception as exc:  # pragma: no cover - depends on the environment
     BOOTSTRAP_AVAILABLE = False
     BOOTSTRAP_ERROR = str(exc)
 
-THEME_NAME = "flatly"
+#: Themes in order of preference. The same list, in the same order, as
+#: Proteus: that is what keeps the two products looking like one, whatever a
+#: future version of ttkbootstrap does to the names.
+#:
+#: "flatly" is a pre-2.0 name kept as a migration convenience and planned for
+#: removal; it still resolves, with a DeprecationWarning. It is first because
+#: it is the palette these products have, and "bootstrap-light" is *not* the
+#: same palette despite the two being easy to confuse -- flatly's primary is
+#: a dark navy, bootstrap-light's a bright blue. When flatly goes, both
+#: products move to the next name together.
+THEME_PREFERENCE = ("flatly", "bootstrap-light", "litera", "cosmo")
+
+#: The first of those this ttkbootstrap actually has. Resolved by trying, not
+#: by looking in theme_names(): a legacy name still resolves but is
+#: deliberately absent from that list, so checking membership is exactly how
+#: the preferred theme gets skipped.
+THEME_NAME = THEME_PREFERENCE[0]
 
 #: Translation key for each connection type shown in the combo box.
 CONNECTION_KEYS = {
@@ -172,8 +188,8 @@ class IrisApp:
 
         if self.bootstyle_available:
             try:
-                self.style = tb.Style(THEME_NAME)
-                self.log(t("log.bootstrap_active", theme=THEME_NAME))
+                self.style = tb.Style()
+                self.log(t("log.bootstrap_active", theme=_use_theme(self.style)))
             except Exception as exc:
                 self.bootstyle_available = False
                 self.log(t("log.bootstrap_fallback", error=exc), level=logging.WARNING)
@@ -1596,12 +1612,43 @@ class IrisApp:
         )
 
 
-def create_root():
-    """Create the main window, using ttkbootstrap when available."""
-    if BOOTSTRAP_AVAILABLE:
+
+def _use_theme(style) -> str:
+    """Apply the first theme in THEME_PREFERENCE this ttkbootstrap has.
+
+    Tried rather than looked up, because a legacy name still resolves while
+    being deliberately absent from ``theme_names()`` -- so checking membership
+    first is exactly how the preferred theme gets skipped.
+
+    Returns the name that took, or the one already in use if none did.
+    """
+    for name in THEME_PREFERENCE:
         try:
-            return tb.Window(themename=THEME_NAME)
-        except Exception:
+            style.theme_use(name)
+            return name
+        except Exception:  # noqa: BLE001 - a missing theme is not an error
+            continue
+    try:
+        return str(style.theme.name)
+    except Exception:  # noqa: BLE001
+        return "default"
+
+def create_root():
+    """Create the main window, using ttkbootstrap when available.
+
+    The theme is applied afterwards by :func:`_use_theme`, so the window and
+    the application agree on it even when the preferred name is one this
+    ttkbootstrap will not accept here.
+    """
+    if BOOTSTRAP_AVAILABLE:
+        for name in THEME_PREFERENCE:
+            try:
+                return tb.Window(themename=name)
+            except Exception:  # noqa: BLE001 - try the next name
+                continue
+        try:
+            return tb.Window()
+        except Exception:  # noqa: BLE001 - fall through to plain Tk
             pass
     return tk.Tk()
 

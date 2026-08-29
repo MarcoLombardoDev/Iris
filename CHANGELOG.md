@@ -79,6 +79,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   answers without needing a display.
 
 ### Changed
+- **The theme is chosen from the same ordered list Proteus uses**, and applied
+  by trying rather than by looking the name up. Iris happened to be right and
+  Proteus happened to be wrong — `theme_names()` deliberately omits the
+  pre-2.0 names, so a membership check drops the preferred theme without
+  saying so — but the two arriving at the same palette was luck, not design.
+  Now it is design: one list, one order, and when a deprecated name is finally
+  removed both products move to the next one together.
 - **The window opens maximised.** All four now fill the screen at start-up
   rather than opening at a fixed size in the corner. Deliberately maximised
   and not true full screen: that hides the title bar and the way out of it,
