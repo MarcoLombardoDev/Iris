@@ -8,7 +8,7 @@
 
 """Application version and naming — the single source of truth."""
 
-__version__ = "2.3.0"
+__version__ = "1.0.0"
 
 #: Short name, used for the executable, folders and log files.
 APP_NAME = "Iris"

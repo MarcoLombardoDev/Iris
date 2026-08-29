@@ -147,12 +147,12 @@ build machine produced it, under **Checksums** in the release notes. Compute you
 and compare:
 
 ```powershell
-Get-FileHash .\Iris-2.3.0-windows-x64.zip -Algorithm SHA256      # Windows
+Get-FileHash .\Iris-1.0.0-windows-x64.zip -Algorithm SHA256      # Windows
 ```
 
 ```sh
-sha256sum Iris-2.3.0-linux-x64.tar.gz                             # Linux
-shasum -a 256 Iris-2.3.0-macos-arm64.zip                          # macOS
+sha256sum Iris-1.0.0-linux-x64.tar.gz                             # Linux
+shasum -a 256 Iris-1.0.0-macos-arm64.zip                          # macOS
 ```
 
 That is a weaker guarantee than a signature — it proves the file was not altered between

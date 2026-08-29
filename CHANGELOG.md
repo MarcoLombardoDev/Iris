@@ -66,6 +66,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   answers without needing a display.
 
 ### Changed
+- **The release now fails if the tag and the program disagree about the
+  version.** Nothing checked it, which is exactly how a `v1.0.0` tag could
+  produce `Iris-1.0.0-windows-x64.zip` containing a program that answers
+  `--version` with something else — a download whose name and contents
+  contradict each other. The smoke test compares the two on every platform and
+  stops the release rather than publishing that.
 - **The archive unpacks to a folder named after the tool.** It was
   `Iris-<version>-<platform>/`, which repeats what the file it came out of
   already says and leaves three different folder names on one person's disk for
@@ -188,6 +194,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   Actions is the only thing that can run it) and checks for exactly these two
   regressions — verified to fail against the previous version of the file.
 - Test suite grown from 211 to 216 tests.
+
+## Renumbered to 1.0.0
+
+Orion, Iris, Proteus and Argus share one release process, one licence and one
+set of conventions; from here they share a starting version as well. Iris had reached 2.3.0 under its own numbering, and restarts here.
+Everything below this line is the real history and is kept for that reason:
+nothing about the program went backwards. What changed is the number the next
+release carries, and it changed at the one moment it costs nothing — before
+anybody had downloaded any of it.
 
 ## [2.3.0] - 2026-08-17
 
