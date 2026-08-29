@@ -134,18 +134,30 @@ class IrisApp:
     # Infrastructure
     # ------------------------------------------------------------------
     def _set_window_icon(self):
-        """Set the window icon, without ever blocking start-up on failure."""
-        try:
-            ico_path = paths.resource_path(os.path.join("assets", "app_icon.ico"))
-            if os.name == "nt" and os.path.exists(ico_path):
-                self.root.iconbitmap(ico_path)
-                return
-            png_path = paths.resource_path(os.path.join("assets", "app_icon.png"))
-            if os.path.exists(png_path):
+        """Set the window icon, without ever blocking start-up on failure.
+
+        Two independent attempts, and the independence is the point: with one
+        ``try`` around both, a failing ``iconbitmap`` took the fallback down
+        with it and the window kept Tk's default feather. The PhotoImage goes
+        on first because it works everywhere and Tk has read PNG since 8.6;
+        ``iconbitmap`` follows on Windows for the sharper small sizes, and
+        raises before it changes anything, so a failure there cannot undo it.
+        """
+        png_path = paths.resource_path(os.path.join("assets", "app_icon.png"))
+        if os.path.exists(png_path):
+            try:
                 self._icon_photo = tk.PhotoImage(file=png_path)
                 self.root.iconphoto(True, self._icon_photo)
-        except Exception as exc:
-            self.log(t("log.icon_error", error=exc), level=logging.WARNING)
+            except Exception as exc:
+                self.log(t("log.icon_error", error=exc), level=logging.WARNING)
+
+        if os.name == "nt":
+            ico_path = paths.resource_path(os.path.join("assets", "app_icon.ico"))
+            if os.path.exists(ico_path):
+                try:
+                    self.root.iconbitmap(ico_path)
+                except Exception as exc:
+                    self.log(t("log.icon_error", error=exc), level=logging.WARNING)
 
     def open_licensing_email(self, event=None):
         """Open the mail client on a commercial licensing enquiry."""
