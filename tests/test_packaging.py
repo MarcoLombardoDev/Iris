@@ -29,6 +29,45 @@ import pytest
 
 REPO = Path(__file__).resolve().parent.parent
 
+
+#: The module each of these products keeps its interface constants in.
+UI_MODULE = "iris/gui.py"
+
+
+def _assigned(name: str, path: str = None):
+    """The AST node a module-level constant is assigned, without importing it.
+
+    These constants are declarations — the theme order, the font order, the
+    button styles — and their whole job is to be identical across the four
+    products. Reading them by ``import`` made that check depend on Tk being
+    installed, so on a machine without the toolkit the comparison did not fail:
+    it errored, next to four neighbours in the same file that skip cleanly for
+    the same reason. Neither is what a declaration deserves. Parsed from the
+    source, it is checked everywhere, with no toolkit and no window.
+    """
+    import ast
+
+    source = (REPO / (path or UI_MODULE)).read_text(encoding="utf-8")
+    for node in ast.parse(source).body:
+        targets = getattr(node, "targets", [])
+        if any(isinstance(t, ast.Name) and t.id == name for t in targets):
+            return node.value
+    raise AssertionError(f"{name} is not assigned at the top level of {path or UI_MODULE}")
+
+
+def declared(name: str):
+    """The literal value of a module-level constant."""
+    import ast
+
+    return ast.literal_eval(_assigned(name))
+
+
+def declared_keys(name: str) -> set:
+    """The keys of a module-level dict whose values need not be literals."""
+    import ast
+
+    return {ast.literal_eval(key) for key in _assigned(name).keys}
+
 #: Every file that decides what goes into a bundle. More than one, in two of
 #: these projects, because build.py generates its own spec rather than using
 #: the versioned one — so they are separate inputs to the same decision, and
@@ -348,8 +387,7 @@ class TestLooksLikeTheOthers:
     PREFERENCE = ("flatly", "bootstrap-light", "litera", "cosmo")
 
     def test_the_theme_preference_is_the_shared_one(self):
-        from iris.gui import THEME_PREFERENCE
-        assert THEME_PREFERENCE == self.PREFERENCE
+        assert declared("THEME_PREFERENCE") == self.PREFERENCE
 
     def test_the_theme_is_chosen_by_trying_not_by_looking_it_up(self):
         """A legacy name still resolves while being deliberately absent from
@@ -432,8 +470,7 @@ class TestInterfaceFont:
     )
 
     def test_the_preference_list_is_the_shared_one(self):
-        from iris.gui import UI_FONT_PREFERENCE
-        assert UI_FONT_PREFERENCE == self.PREFERENCE
+        assert declared("UI_FONT_PREFERENCE") == self.PREFERENCE
 
     def test_nothing_asks_for_arial(self):
         import re
