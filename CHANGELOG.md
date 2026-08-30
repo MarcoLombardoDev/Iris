@@ -79,6 +79,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   answers without needing a display.
 
 ### Changed
+- **One interface font across the four, named rather than left to a
+  default.** Segoe UI where the machine has it, with the equivalent on macOS
+  and Linux behind it, resolved once from a list the four products share.
+  Nothing depends any more on which family the toolkit happened to pick.
 - **The theme is chosen from the same ordered list Proteus uses**, and applied
   by trying rather than by looking the name up. Iris happened to be right and
   Proteus happened to be wrong — `theme_names()` deliberately omits the
@@ -176,6 +180,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   not been migrated to this structure yet.
 
 ### Fixed
+- **Arial is gone.** It was hard-coded in eight places here — the footer, the
+  log, the small labels — while the rest of the interface used whatever Tk
+  defaults to, which on Windows is Segoe UI. So those labels were the odd ones
+  out inside a single window, never mind across four products.
 - **The window came up under Tk's default feather, with both icon files
   inside the executable.** Confirmed by reading them back out of the published
   build: the `.ico` and the `.png` were there and correct. The fault was one

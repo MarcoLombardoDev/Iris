@@ -420,7 +420,7 @@ class IrisApp:
         version_label = ttk.Label(
             self.notebook_container,
             text=f"{APP_TITLE.upper()}  ·  " + t("app.version_label", version=__version__),
-            font=("Arial", 8),
+            font=ui_font(8),
         )
         version_label.place(relx=1.0, y=2, anchor=tk.NE, x=-5)
 
@@ -455,7 +455,7 @@ class IrisApp:
         self.footer_label = ttk.Label(
             footer_center,
             text=t("footer.copyright", app=APP_NAME),
-            font=("Arial", 8),
+            font=ui_font(8),
             foreground="#888888",
         )
         self.footer_label.pack(side=tk.LEFT)
@@ -463,7 +463,7 @@ class IrisApp:
         self.footer_email = ttk.Label(
             footer_center,
             text=CONTACT_EMAIL,
-            font=("Arial", 8, "underline"),
+            font=ui_font(8, "underline"),
             foreground="#1a5fb4",
             cursor="hand2",
         )
@@ -538,7 +538,7 @@ class IrisApp:
         ttk.Label(
             email_frame,
             text=t("config.auth_note"),
-            font=("Arial", 8),
+            font=ui_font(8),
             foreground="#1a5fb4",
             wraplength=520,
             justify="left",
@@ -570,7 +570,7 @@ class IrisApp:
         ttk.Label(
             subject_frame,
             text=t("config.variables", placeholder=mailer.COMPANY_PLACEHOLDERS[0]),
-            font=("Arial", 8),
+            font=ui_font(8),
         ).pack(side=tk.LEFT, padx=(10, 0))
 
         cc_bcc_frame = ttk.Frame(template_frame)
@@ -645,7 +645,7 @@ class IrisApp:
         ttk.Label(
             options_row,
             text=t("config.send_delay_hint"),
-            font=("Arial", 8),
+            font=ui_font(8),
             foreground="#666666",
         ).pack(side=tk.LEFT, padx=(8, 0))
 
@@ -902,7 +902,7 @@ class IrisApp:
         ttk.Label(
             file_frame,
             text=t("actions.criteria"),
-            font=("Arial", 8),
+            font=ui_font(8),
             foreground="#666666",
             wraplength=780,
             justify="left",
@@ -979,7 +979,7 @@ class IrisApp:
         events_frame = ttk.LabelFrame(parent, text=t("logs.frame"))
         events_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        self.log_text = scrolledtext.ScrolledText(events_frame, width=80, height=30, font=("Arial", 9))
+        self.log_text = scrolledtext.ScrolledText(events_frame, width=80, height=30, font=ui_font(9))
         self.log_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.log_text.config(state=tk.DISABLED)
 
@@ -1612,6 +1612,59 @@ class IrisApp:
         )
 
 
+
+#: Interface font, in order of preference. The same list in all four products.
+#:
+#: Segoe UI first because it is what Windows uses for its own interface, and
+#: three of these four were already getting it there -- two by asking for it,
+#: one because Tk and Qt both default to it. The rest are the equivalent on
+#: the other platforms, so nothing has to fall back to a font chosen by
+#: whichever toolkit happened to be asked.
+#:
+#: Arial is deliberately not on this list. It was hard-coded in a handful of
+#: places here, which is what made the small labels the odd ones out.
+UI_FONT_PREFERENCE = (
+    "Segoe UI",          # Windows
+    "SF Pro Text",       # macOS 11+
+    "Helvetica Neue",    # older macOS
+    "Noto Sans",         # most Linux desktops
+    "DejaVu Sans",       # the rest
+)
+
+_UI_FONT_FAMILY: str | None = None
+
+
+def ui_font_family() -> str:
+    """The first font in UI_FONT_PREFERENCE this machine actually has.
+
+    Resolved once and remembered: ``families()`` walks the whole font
+    database, and this is asked for on every label built.
+
+    Falls back to whatever Tk itself would have used, which is the right
+    answer for a machine that has none of these -- better a font the system
+    chose than a name it will silently substitute.
+    """
+    global _UI_FONT_FAMILY
+    if _UI_FONT_FAMILY is not None:
+        return _UI_FONT_FAMILY
+
+    try:
+        from tkinter import font as tkfont
+
+        available = {name.lower() for name in tkfont.families()}
+        for family in UI_FONT_PREFERENCE:
+            if family.lower() in available:
+                _UI_FONT_FAMILY = family
+                return family
+        _UI_FONT_FAMILY = str(tkfont.nametofont("TkDefaultFont").actual("family"))
+    except Exception:  # noqa: BLE001 - a font is never worth failing to start
+        _UI_FONT_FAMILY = "TkDefaultFont"
+    return _UI_FONT_FAMILY
+
+
+def ui_font(size: int, *styles: str) -> tuple:
+    """A Tk font spec in the interface font: ``ui_font(9, "bold")``."""
+    return (ui_font_family(), size, *styles)
 
 def _use_theme(style) -> str:
     """Apply the first theme in THEME_PREFERENCE this ttkbootstrap has.
