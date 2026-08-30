@@ -13,6 +13,7 @@ and automatic reconnection, with no external dependency and without ever
 sending a real email.
 """
 
+import contextlib
 import email
 import socket
 import threading
@@ -106,10 +107,8 @@ class TinySMTPServer(threading.Thread):
 
     def stop(self):
         self._running = False
-        try:
+        with contextlib.suppress(OSError):
             self.socket.close()
-        except OSError:
-            pass
 
 
 @pytest.fixture

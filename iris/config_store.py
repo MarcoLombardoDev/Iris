@@ -15,9 +15,9 @@ executable lives in a read-only folder.
 
 import base64
 import configparser
+import contextlib
 import os
 from dataclasses import asdict, dataclass, field, replace
-from typing import List, Optional
 
 from . import paths
 from .i18n import DEFAULT_LANGUAGE, normalize_language, set_language, t
@@ -83,7 +83,7 @@ class MessageTemplate:
     email_body: str = ""
     email_cc: str = ""
     email_bcc: str = ""
-    attachments: List[str] = field(default_factory=list)
+    attachments: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -100,21 +100,21 @@ class AppConfig:
     email_body: str = ""
     email_cc: str = ""
     email_bcc: str = ""
-    attachments: List[str] = field(default_factory=list)
+    attachments: list[str] = field(default_factory=list)
     language: str = DEFAULT_LANGUAGE
     send_delay: str = "0"
-    profiles: List[SenderProfile] = field(default_factory=list)
-    templates: List[MessageTemplate] = field(default_factory=list)
+    profiles: list[SenderProfile] = field(default_factory=list)
+    templates: list[MessageTemplate] = field(default_factory=list)
 
     def as_dict(self) -> dict:
         return asdict(self)
 
-    def profile(self, name: str) -> Optional[SenderProfile]:
+    def profile(self, name: str) -> SenderProfile | None:
         """Return the saved profile called ``name`` (case-insensitive)."""
         wanted = clean_name(name).lower()
         return next((item for item in self.profiles if item.name.lower() == wanted), None)
 
-    def template(self, name: str) -> Optional[MessageTemplate]:
+    def template(self, name: str) -> MessageTemplate | None:
         """Return the saved template called ``name`` (case-insensitive)."""
         wanted = clean_name(name).lower()
         return next((item for item in self.templates if item.name.lower() == wanted), None)
@@ -139,17 +139,17 @@ _SCALAR_FIELDS = (
 )
 
 
-def _parse_attachments(value: str) -> List[str]:
+def _parse_attachments(value: str) -> list[str]:
     """Split the ``attachments`` key into individual paths."""
     return [item for item in (part.strip() for part in value.split(_ATTACHMENT_SEP)) if item]
 
 
-def _format_attachments(paths: List[str]) -> str:
+def _format_attachments(paths: list[str]) -> str:
     """Join attachment paths for storage."""
     return _ATTACHMENT_SEP.join(path for path in paths if path)
 
 
-def _read_attachments(section) -> List[str]:
+def _read_attachments(section) -> list[str]:
     """Read ``attachments``, falling back to the pre-2.3 ``attachment_path``.
 
     Files written before multiple attachments existed have a single
@@ -168,9 +168,9 @@ class LoadResult:
     """Outcome of a configuration load."""
 
     config: AppConfig = field(default_factory=AppConfig)
-    path: Optional[str] = None
-    encoding: Optional[str] = None
-    messages: List[str] = field(default_factory=list)
+    path: str | None = None
+    encoding: str | None = None
+    messages: list[str] = field(default_factory=list)
 
     @property
     def found(self) -> bool:
@@ -197,7 +197,7 @@ def deobfuscate(value: str) -> str:
         return ""
 
 
-def candidate_paths() -> List[str]:
+def candidate_paths() -> list[str]:
     """Locations where ``config.ini`` is looked up, in priority order."""
     seen = []
     for directory in (paths.app_dir(), os.getcwd(), paths.user_data_dir()):
@@ -217,7 +217,7 @@ def default_save_path() -> str:
     return os.path.join(paths.writable_app_dir(), CONFIG_FILENAME)
 
 
-def _read_profiles(parser: configparser.ConfigParser) -> List[SenderProfile]:
+def _read_profiles(parser: configparser.ConfigParser) -> list[SenderProfile]:
     """Read every ``[PROFILE:name]`` section, sorted by name."""
     profiles = []
     for header in parser.sections():
@@ -241,7 +241,7 @@ def _read_profiles(parser: configparser.ConfigParser) -> List[SenderProfile]:
     return sorted(profiles, key=lambda item: item.name.lower())
 
 
-def _read_templates(parser: configparser.ConfigParser) -> List[MessageTemplate]:
+def _read_templates(parser: configparser.ConfigParser) -> list[MessageTemplate]:
     """Read every ``[TEMPLATE:name]`` section, sorted by name."""
     templates = []
     for header in parser.sections():
@@ -264,7 +264,7 @@ def _read_templates(parser: configparser.ConfigParser) -> List[MessageTemplate]:
     return sorted(templates, key=lambda item: item.name.lower())
 
 
-def load(path: Optional[str] = None, apply_language: bool = True) -> LoadResult:
+def load(path: str | None = None, apply_language: bool = True) -> LoadResult:
     """Load the configuration from ``path`` or from the first location found.
 
     With ``apply_language`` (the default) the stored language preference is
@@ -334,7 +334,7 @@ def load(path: Optional[str] = None, apply_language: bool = True) -> LoadResult:
     return result
 
 
-def save(config: AppConfig, path: Optional[str] = None) -> str:
+def save(config: AppConfig, path: str | None = None) -> str:
     """Write the configuration as UTF-8 and return the path used."""
     config_path = path or default_save_path()
     directory = os.path.dirname(os.path.abspath(config_path))
@@ -377,14 +377,12 @@ def save(config: AppConfig, path: Optional[str] = None) -> str:
 
     # Restrict permissions on POSIX: the file holds credentials.
     if os.name == "posix":
-        try:
+        with contextlib.suppress(OSError):
             os.chmod(config_path, 0o600)
-        except OSError:
-            pass
     return config_path
 
 
-def update_language(language: str, path: Optional[str] = None) -> str:
+def update_language(language: str, path: str | None = None) -> str:
     """Persist only the language preference, keeping the rest untouched.
 
     Used by the language selector, which must not overwrite fields the user is
@@ -404,12 +402,12 @@ def update_language(language: str, path: Optional[str] = None) -> str:
 # ---------------------------------------------------------------------------
 # Like update_language, these touch one entry and leave everything else in the
 # file untouched: the user may well be editing other fields at the same time.
-def _reload_for_edit(path: Optional[str]) -> "tuple[str, AppConfig]":
+def _reload_for_edit(path: str | None) -> "tuple[str, AppConfig]":
     config_path = path or default_save_path()
     return config_path, load(config_path, apply_language=False).config
 
 
-def save_profile(profile: SenderProfile, path: Optional[str] = None) -> str:
+def save_profile(profile: SenderProfile, path: str | None = None) -> str:
     """Add or replace a sender profile, keeping the rest of the file intact."""
     name = clean_name(profile.name)
     if not name:
@@ -421,7 +419,7 @@ def save_profile(profile: SenderProfile, path: Optional[str] = None) -> str:
     return save(config, config_path)
 
 
-def delete_profile(name: str, path: Optional[str] = None) -> str:
+def delete_profile(name: str, path: str | None = None) -> str:
     """Remove a sender profile; unknown names are a no-op."""
     wanted = clean_name(name).lower()
     config_path, config = _reload_for_edit(path)
@@ -429,7 +427,7 @@ def delete_profile(name: str, path: Optional[str] = None) -> str:
     return save(config, config_path)
 
 
-def save_template(template: MessageTemplate, path: Optional[str] = None) -> str:
+def save_template(template: MessageTemplate, path: str | None = None) -> str:
     """Add or replace an email template, keeping the rest of the file intact."""
     name = clean_name(template.name)
     if not name:
@@ -441,7 +439,7 @@ def save_template(template: MessageTemplate, path: Optional[str] = None) -> str:
     return save(config, config_path)
 
 
-def delete_template(name: str, path: Optional[str] = None) -> str:
+def delete_template(name: str, path: str | None = None) -> str:
     """Remove an email template; unknown names are a no-op."""
     wanted = clean_name(name).lower()
     config_path, config = _reload_for_edit(path)

@@ -13,6 +13,7 @@ configuration handling) lives in the :mod:`iris` package; this module
 only contains the Tkinter layer.
 """
 
+import contextlib
 import datetime
 import logging
 import os
@@ -106,10 +107,8 @@ def maximise(window) -> None:
 
     # Mapped first, or every measurement below reads 1x1 and every
     # attempt looks like it failed.
-    try:
+    with contextlib.suppress(Exception):  # see the docstring
         window.update_idletasks()
-    except Exception:  # noqa: BLE001 — see the docstring
-        pass
 
     for attempt in (
         lambda: window.state("zoomed"),
@@ -285,13 +284,17 @@ class IrisApp:
                 except Exception as exc:
                     self.logger.error("Error while updating the UI: %s", exc)
         finally:
+            # Written as if/else rather than an early return: a ``return`` in a
+            # ``finally`` discards whatever exception was on its way out of the
+            # ``try``, which here would silently swallow anything the queue
+            # loop raised that the inner handler did not catch.
             if self._closing:
                 self._ui_queue_job = None
-                return
-            try:
-                self._ui_queue_job = self.root.after(100, self.process_ui_queue)
-            except tk.TclError:
-                self._ui_queue_job = None  # window closed
+            else:
+                try:
+                    self._ui_queue_job = self.root.after(100, self.process_ui_queue)
+                except tk.TclError:
+                    self._ui_queue_job = None  # window closed
 
     def run_on_ui(self, callback):
         """Schedule ``callback`` to run on the GUI thread."""
@@ -328,19 +331,15 @@ class IrisApp:
     def _cancel_status_reset(self):
         if self._status_reset_job is None:
             return
-        try:
+        with contextlib.suppress(Exception):
             self.root.after_cancel(self._status_reset_job)
-        except Exception:
-            pass
         self._status_reset_job = None
 
     def _reset_status_bar(self):
         self._status_reset_job = None
         if hasattr(self, "status_label"):
-            try:
+            with contextlib.suppress(tk.TclError):
                 self.status_label.config(text=t("status.ready"))
-            except tk.TclError:
-                pass
 
     def log(self, message, level=logging.INFO):
         """Write a message to the LOG tab and to the log file (thread-safe)."""
@@ -385,10 +384,8 @@ class IrisApp:
         for job in (self._ui_queue_job, self._status_reset_job):
             if job is None:
                 continue
-            try:
+            with contextlib.suppress(Exception):
                 self.root.after_cancel(job)
-            except Exception:
-                pass
         self._ui_queue_job = None
         self._status_reset_job = None
 
@@ -397,10 +394,8 @@ class IrisApp:
         # collector ran it inside a worker thread.
         self._icon_photo = None
 
-        try:
+        with contextlib.suppress(tk.TclError):
             self.root.destroy()
-        except tk.TclError:
-            pass
 
     # ------------------------------------------------------------------
     # Widget construction
@@ -564,7 +559,9 @@ class IrisApp:
 
         subject_frame = ttk.Frame(template_frame)
         subject_frame.pack(fill=tk.X, padx=5, pady=5)
-        ttk.Label(subject_frame, text=t("config.subject"), width=12).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(subject_frame, text=t("config.subject"), width=12).pack(
+            side=tk.LEFT, padx=(0, 10)
+        )
         self.subject_template_entry = ttk.Entry(subject_frame, textvariable=self.subject_template)
         self.subject_template_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Label(
@@ -650,7 +647,7 @@ class IrisApp:
         ).pack(side=tk.LEFT, padx=(8, 0))
 
         ttk.Label(options_row, text=t("config.language")).pack(side=tk.LEFT, padx=(30, 10))
-        self.language_names = {code: name for code, name in i18n.language_choices()}
+        self.language_names = dict(i18n.language_choices())
         self.language_codes = {name: code for code, name in self.language_names.items()}
         self.language_combo = ttk.Combobox(
             options_row,
@@ -722,10 +719,8 @@ class IrisApp:
         ):
             if combo is None:
                 continue
-            try:
+            with contextlib.suppress(tk.TclError):
                 combo.config(values=names)
-            except tk.TclError:
-                pass
 
     def _ask_name(self, title_key, body_key, current):
         """Ask for a name, returning it cleaned up — or ``None`` to give up."""
@@ -970,16 +965,16 @@ class IrisApp:
     def _set_buttons_enabled(self, enabled):
         state = tk.NORMAL if enabled else tk.DISABLED
         for button in self._action_buttons:
-            try:
+            with contextlib.suppress(tk.TclError):
                 button.config(state=state)
-            except tk.TclError:
-                pass
 
     def setup_logs_tab(self, parent):
         events_frame = ttk.LabelFrame(parent, text=t("logs.frame"))
         events_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        self.log_text = scrolledtext.ScrolledText(events_frame, width=80, height=30, font=ui_font(9))
+        self.log_text = scrolledtext.ScrolledText(
+            events_frame, width=80, height=30, font=ui_font(9)
+        )
         self.log_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.log_text.config(state=tk.DISABLED)
 
@@ -1030,10 +1025,8 @@ class IrisApp:
             self.log_text.insert("1.0", log_lines + "\n")
             self.log_text.see(tk.END)
             self.log_text.config(state=tk.DISABLED)
-        try:
+        with contextlib.suppress(tk.TclError):
             self.notebook.select(selected_tab)
-        except tk.TclError:
-            pass
 
     # ------------------------------------------------------------------
     # Document analysis
@@ -1296,10 +1289,8 @@ class IrisApp:
     def _remove_tree_item(self, item):
         if not item:
             return
-        try:
+        with contextlib.suppress(tk.TclError):
             self.actions_tree.delete(item)
-        except tk.TclError:
-            pass
 
     def _send_failed(self, detail):
         self.log(detail, level=logging.ERROR)

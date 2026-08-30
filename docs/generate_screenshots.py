@@ -143,7 +143,6 @@ def main():
     paths.writable_app_dir = lambda: str(REPO_ROOT / "docs" / "_screenshot_data")
     i18n.set_language(LANGUAGE)
 
-    from iris import gui
     from iris.gui import IrisApp, create_root
 
     root = create_root()

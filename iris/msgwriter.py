@@ -13,16 +13,17 @@ package. When that is unavailable the application falls back to the standard
 ``.eml`` format, which Outlook, Thunderbird and most mail clients can open.
 """
 
+import contextlib
 import os
 import re
 import sys
+from collections.abc import Callable
 from email.message import EmailMessage
 from email.policy import SMTP as SMTP_POLICY
-from typing import Callable, Optional, Tuple
 
 from .i18n import t
 
-Logger = Optional[Callable[[str], None]]
+Logger = Callable[[str], None] | None
 
 _INVALID_FILENAME_CHARS = re.compile(r"[^A-Za-z0-9._\- ]+")
 
@@ -112,10 +113,8 @@ def save_msg_via_outlook(
         mail.SaveAs(filepath, 3)  # 3 = olMSG (unicode)
         return filepath
     finally:
-        try:
+        with contextlib.suppress(Exception):
             pythoncom.CoUninitialize()
-        except Exception:
-            pass
 
 
 def save_message(
@@ -126,7 +125,7 @@ def save_message(
     attachments=None,
     prefer_msg: bool = True,
     log: Logger = None,
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """Save the email using the best format available.
 
     Returns ``(path, format)`` where format is ``"msg"`` or ``"eml"``.

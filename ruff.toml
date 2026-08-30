@@ -1,0 +1,17 @@
+# The lint configuration the sibling products share. Iris and Proteus keep it
+# in a ruff.toml rather than in pyproject.toml, which neither of them has: the
+# rules are what matter, not where they are written down.
+line-length = 100
+target-version = "py310"
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["B008", "SIM108"]
+
+[lint.per-file-ignores]
+# A defaults table written with dict(key=value) reads better in a test helper
+# than a brace literal, and none of it is logic.
+"tests/*" = ["E501", "C408"]
+# The translation catalogues: one message per line, and a wrapped translation
+# is harder to read and harder to diff than a long one.
+"iris/i18n.py" = ["E501"]

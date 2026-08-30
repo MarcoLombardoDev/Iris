@@ -22,12 +22,11 @@ English is the default language; the user preference is stored in
 ``config.ini`` and applied at start-up.
 """
 
-from typing import Dict, List, Tuple
 
 DEFAULT_LANGUAGE = "en"
 
 #: Supported languages: code -> name shown in the interface.
-LANGUAGES: Dict[str, str] = {
+LANGUAGES: dict[str, str] = {
     "en": "English",
     "it": "Italiano",
 }
@@ -38,7 +37,7 @@ _current_language = DEFAULT_LANGUAGE
 # ---------------------------------------------------------------------------
 # Catalogues
 # ---------------------------------------------------------------------------
-_EN: Dict[str, str] = {
+_EN: dict[str, str] = {
     # -- window / generic --------------------------------------------------
     "app.version_label": "VERSION {version}",
     "footer.copyright": (
@@ -321,7 +320,7 @@ _EN: Dict[str, str] = {
     "msgwriter.remove_error": "Could not remove {name}: {error}",
 }
 
-_IT: Dict[str, str] = {
+_IT: dict[str, str] = {
     # -- finestra / generici -----------------------------------------------
     "app.version_label": "VERSIONE {version}",
     "footer.copyright": (
@@ -610,7 +609,7 @@ _IT: Dict[str, str] = {
     "msgwriter.remove_error": "Impossibile rimuovere {name}: {error}",
 }
 
-CATALOGUES: Dict[str, Dict[str, str]] = {"en": _EN, "it": _IT}
+CATALOGUES: dict[str, dict[str, str]] = {"en": _EN, "it": _IT}
 
 
 # ---------------------------------------------------------------------------
@@ -644,7 +643,7 @@ def language_name(code: str) -> str:
     return LANGUAGES.get(normalize_language(code), LANGUAGES[DEFAULT_LANGUAGE])
 
 
-def language_choices() -> List[Tuple[str, str]]:
+def language_choices() -> list[tuple[str, str]]:
     """Return ``[(code, name), ...]`` for every supported language."""
     return [(code, LANGUAGES[code]) for code in CATALOGUES]
 

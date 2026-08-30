@@ -12,21 +12,22 @@ Like the rest of the package this module is independent from Tkinter, so the
 sending logic can be tested and reused without a graphical interface.
 """
 
+import contextlib
 import mimetypes
 import os
 import re
 import smtplib
 import socket
 import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
-from typing import Callable, List, Optional, Sequence, Tuple
 
 from .i18n import t
 from .parsers import Recipient, is_valid_email
 
-Logger = Optional[Callable[[str], None]]
+Logger = Callable[[str], None] | None
 
 #: Supported connection types.
 CONNECTION_SSL = "ssl"
@@ -87,7 +88,7 @@ class EmailTemplate:
     #: recipient, not who else is copied on it.
     cc: str = ""
     bcc: str = ""
-    attachments: List[str] = field(default_factory=list)
+    attachments: list[str] = field(default_factory=list)
 
     def render_subject(self, company: str) -> str:
         return render_template(self.subject, company)
@@ -99,7 +100,7 @@ class EmailTemplate:
 _ADDRESS_LIST_SPLIT = re.compile(r"[;,]")
 
 
-def parse_address_list(value: str) -> List[str]:
+def parse_address_list(value: str) -> list[str]:
     """Split a Cc/Bcc field into individual addresses.
 
     Accepts commas and semicolons as separators, either one, since both are
@@ -110,9 +111,9 @@ def parse_address_list(value: str) -> List[str]:
     return [part.strip() for part in _ADDRESS_LIST_SPLIT.split(value) if part.strip()]
 
 
-def validate_settings(settings: SmtpSettings, template: EmailTemplate) -> List[str]:
+def validate_settings(settings: SmtpSettings, template: EmailTemplate) -> list[str]:
     """Return the list of configuration errors (empty when valid)."""
-    errors: List[str] = []
+    errors: list[str] = []
 
     if not template.sender.strip():
         errors.append(t("validate.sender_missing"))
@@ -297,7 +298,7 @@ class SmtpSession:
     def __init__(self, settings: SmtpSettings, log: Logger = None):
         self.settings = settings
         self.log = log or (lambda message: None)
-        self.server: Optional[smtplib.SMTP] = None
+        self.server: smtplib.SMTP | None = None
         self.authenticated = False
 
     # -- connection handling --------------------------------------------------
@@ -361,10 +362,8 @@ class SmtpSession:
         try:
             self.server.quit()
         except Exception:
-            try:
+            with contextlib.suppress(Exception):
                 self.server.close()
-            except Exception:
-                pass
         finally:
             self.server = None
             self.authenticated = False
@@ -392,8 +391,8 @@ class SmtpSession:
 class BulkResult:
     """Outcome of a bulk send."""
 
-    sent: List[Recipient] = field(default_factory=list)
-    failed: List[Tuple[Recipient, str]] = field(default_factory=list)
+    sent: list[Recipient] = field(default_factory=list)
+    failed: list[tuple[Recipient, str]] = field(default_factory=list)
 
     @property
     def sent_count(self) -> int:
@@ -406,7 +405,7 @@ class BulkResult:
 
 def _pause(
     seconds: float,
-    should_stop: Optional[Callable[[], bool]],
+    should_stop: Callable[[], bool] | None,
     sleep: Callable[[float], None],
 ) -> None:
     """Wait ``seconds`` in short steps, so a cancel request is honoured at once.
@@ -428,8 +427,8 @@ def send_bulk(
     template: EmailTemplate,
     recipients: Sequence[Recipient],
     log: Logger = None,
-    on_result: Optional[Callable[[Recipient, bool, str], None]] = None,
-    should_stop: Optional[Callable[[], bool]] = None,
+    on_result: Callable[[Recipient, bool, str], None] | None = None,
+    should_stop: Callable[[], bool] | None = None,
     sleep: Callable[[float], None] = time.sleep,
 ) -> BulkResult:
     """Send the message to every recipient reusing a single connection.

@@ -12,10 +12,12 @@ The module never imports Tkinter: it is pure logic, testable without a
 display.
 """
 
+import contextlib
 import csv
 import os
 import re
-from typing import Callable, Iterable, List, NamedTuple, Optional, Sequence
+from collections.abc import Callable, Iterable, Sequence
+from typing import NamedTuple
 
 from .i18n import t
 
@@ -38,7 +40,7 @@ _SEPARATORS = (";", ",", "\t", "|")
 #: "S.r.l." or "Inc.".
 _COMPANY_CLEAN_RE = re.compile(r"^[\s\-–—:;,.*•>]+|[\s\-–—:;,*•<]+$")
 
-Logger = Optional[Callable[[str], None]]
+Logger = Callable[[str], None] | None
 
 
 class Recipient(NamedTuple):
@@ -87,10 +89,10 @@ def fallback_company(email: str) -> str:
     return t("parsers.fallback_company", domain=domain.capitalize())
 
 
-def dedupe(recipients: Iterable[Recipient]) -> List[Recipient]:
+def dedupe(recipients: Iterable[Recipient]) -> list[Recipient]:
     """Drop duplicated addresses, keeping the first occurrence."""
     seen = set()
-    unique: List[Recipient] = []
+    unique: list[Recipient] = []
     for company, email in recipients:
         key = email.lower()
         if key in seen:
@@ -100,7 +102,7 @@ def dedupe(recipients: Iterable[Recipient]) -> List[Recipient]:
     return unique
 
 
-def _make_recipient(company: str, email: str) -> Optional[Recipient]:
+def _make_recipient(company: str, email: str) -> Recipient | None:
     """Build a ``Recipient``, validating the address and cleaning the name."""
     email = normalize_email(email)
     if not is_valid_email(email):
@@ -115,7 +117,7 @@ def _make_recipient(company: str, email: str) -> Optional[Recipient]:
 # Plain text (txt, docx, PDF fallback)
 # --------------------------------------------------------------------------
 
-def extract_from_lines(lines: Sequence[str]) -> List[Recipient]:
+def extract_from_lines(lines: Sequence[str]) -> list[Recipient]:
     """Extract company/email pairs from a list of text lines.
 
     Rules, in order:
@@ -126,7 +128,7 @@ def extract_from_lines(lines: Sequence[str]) -> List[Recipient]:
        address is the company name;
     3. no name found: the address domain is used instead.
     """
-    results: List[Recipient] = []
+    results: list[Recipient] = []
     for raw_line in lines:
         line = (raw_line or "").strip()
         if not line:
@@ -166,7 +168,7 @@ def extract_from_lines(lines: Sequence[str]) -> List[Recipient]:
     return results
 
 
-def extract_from_text(text: str) -> List[Recipient]:
+def extract_from_text(text: str) -> list[Recipient]:
     """Extract company/email pairs from a block of text."""
     results = extract_from_lines((text or "").splitlines())
     if results:
@@ -185,14 +187,14 @@ def extract_from_text(text: str) -> List[Recipient]:
 # PDF
 # --------------------------------------------------------------------------
 
-def extract_from_pdf_text(text: str) -> List[Recipient]:
+def extract_from_pdf_text(text: str) -> list[Recipient]:
     """Extract pairs from text coming out of a PDF.
 
     PDFs often lack separators, so the context preceding the address is used:
     same line first, then the previous lines.
     """
     lines = (text or "").splitlines()
-    results: List[Recipient] = []
+    results: list[Recipient] = []
 
     for index, line in enumerate(lines):
         for match in EMAIL_REGEX.finditer(line):
@@ -220,7 +222,7 @@ def extract_from_pdf_text(text: str) -> List[Recipient]:
     return dedupe(results)
 
 
-def extract_from_pdf(path: str, log: Logger = None) -> List[Recipient]:
+def extract_from_pdf(path: str, log: Logger = None) -> list[Recipient]:
     """Extract company/email pairs from a PDF file (requires pypdf).
 
     Only the page text is needed: all the recognition happens in
@@ -231,7 +233,7 @@ def extract_from_pdf(path: str, log: Logger = None) -> List[Recipient]:
     except ImportError as exc:  # pragma: no cover - depends on the environment
         raise UnsupportedFormatError(t("parsers.missing_pypdf")) from exc
 
-    results: List[Recipient] = []
+    results: list[Recipient] = []
     # Opening the file here (rather than handing pypdf the path) guarantees the
     # handle is released: on Windows a lingering one blocks the file.
     with open(path, "rb") as handle:
@@ -247,7 +249,7 @@ def extract_from_pdf(path: str, log: Logger = None) -> List[Recipient]:
 # Spreadsheets
 # --------------------------------------------------------------------------
 
-def extract_from_rows(rows: Iterable[Sequence[object]]) -> List[Recipient]:
+def extract_from_rows(rows: Iterable[Sequence[object]]) -> list[Recipient]:
     """Extract pairs from tabular rows.
 
     Column order is not assumed: for every row the first cell holding a valid
@@ -255,7 +257,7 @@ def extract_from_rows(rows: Iterable[Sequence[object]]) -> List[Recipient]:
     is the company name. A header row is dropped automatically because it
     holds no valid address.
     """
-    results: List[Recipient] = []
+    results: list[Recipient] = []
     for row in rows:
         cells = ["" if cell is None else str(cell).strip() for cell in row]
         if not any(cells):
@@ -292,7 +294,7 @@ def extract_from_rows(rows: Iterable[Sequence[object]]) -> List[Recipient]:
     return dedupe(results)
 
 
-def extract_from_xlsx(path: str) -> List[Recipient]:
+def extract_from_xlsx(path: str) -> list[Recipient]:
     """Extract pairs from a modern Excel file (.xlsx/.xlsm)."""
     try:
         import openpyxl
@@ -301,7 +303,7 @@ def extract_from_xlsx(path: str) -> List[Recipient]:
 
     workbook = openpyxl.load_workbook(path, read_only=True, data_only=True)
     try:
-        results: List[Recipient] = []
+        results: list[Recipient] = []
         for sheet in workbook.worksheets:
             results.extend(extract_from_rows(sheet.iter_rows(values_only=True)))
         return dedupe(results)
@@ -309,7 +311,7 @@ def extract_from_xlsx(path: str) -> List[Recipient]:
         workbook.close()
 
 
-def extract_from_xls(path: str) -> List[Recipient]:
+def extract_from_xls(path: str) -> list[Recipient]:
     """Extract pairs from a legacy Excel file (.xls).
 
     ``openpyxl`` does not support the binary .xls format: ``xlrd`` is required.
@@ -321,19 +323,17 @@ def extract_from_xls(path: str) -> List[Recipient]:
 
     book = xlrd.open_workbook(path)
     try:
-        results: List[Recipient] = []
+        results: list[Recipient] = []
         for sheet in book.sheets():
             rows = (sheet.row_values(index) for index in range(sheet.nrows))
             results.extend(extract_from_rows(rows))
         return dedupe(results)
     finally:
-        try:
+        with contextlib.suppress(Exception):
             book.release_resources()
-        except Exception:
-            pass
 
 
-def extract_from_csv(path: str) -> List[Recipient]:
+def extract_from_csv(path: str) -> list[Recipient]:
     """Extract pairs from a CSV file (delimiter detected automatically)."""
     text = _read_text_file(path)
     sample = text[:4096]
@@ -350,7 +350,7 @@ def extract_from_csv(path: str) -> List[Recipient]:
 # Word and plain text
 # --------------------------------------------------------------------------
 
-def extract_from_docx(path: str) -> List[Recipient]:
+def extract_from_docx(path: str) -> list[Recipient]:
     """Extract pairs from a Word document (paragraphs and tables)."""
     try:
         import docx
@@ -358,7 +358,7 @@ def extract_from_docx(path: str) -> List[Recipient]:
         raise UnsupportedFormatError(t("parsers.missing_docx")) from exc
 
     document = docx.Document(path)
-    results: List[Recipient] = []
+    results: list[Recipient] = []
 
     # Tables are structured data: treat them like spreadsheet rows.
     for table in document.tables:
@@ -377,15 +377,15 @@ def _read_text_file(path: str) -> str:
     """Read a text file trying the most common encodings."""
     for encoding in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
         try:
-            with open(path, "r", encoding=encoding) as handle:
+            with open(path, encoding=encoding) as handle:
                 return handle.read()
         except UnicodeDecodeError:
             continue
-    with open(path, "r", encoding="utf-8", errors="replace") as handle:
+    with open(path, encoding="utf-8", errors="replace") as handle:
         return handle.read()
 
 
-def extract_from_txt(path: str) -> List[Recipient]:
+def extract_from_txt(path: str) -> list[Recipient]:
     """Extract pairs from a plain text file."""
     return extract_from_text(_read_text_file(path))
 
@@ -394,7 +394,7 @@ def extract_from_txt(path: str) -> List[Recipient]:
 # Dispatcher
 # --------------------------------------------------------------------------
 
-def extract_from_file(path: str, log: Logger = None) -> List[Recipient]:
+def extract_from_file(path: str, log: Logger = None) -> list[Recipient]:
     """Extract company/email pairs from the given file, based on its extension.
 
     Raises :class:`UnsupportedFormatError` when the format is not handled or

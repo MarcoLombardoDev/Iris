@@ -9,6 +9,7 @@
 """Tests for writing the generated emails to disk."""
 
 import os
+import pathlib
 
 from iris import mailer, msgwriter
 from iris.parsers import Recipient
@@ -42,7 +43,7 @@ def test_save_eml(tmp_path):
     assert kind == "eml"
     assert os.path.exists(path)
 
-    raw = open(path, "rb").read()
+    raw = pathlib.Path(path).read_bytes()
     assert b"To: recipient@example.com" in raw
     assert b"Message-ID:" in raw
 
@@ -66,7 +67,7 @@ def test_save_eml_with_attachment(tmp_path):
     path, _ = msgwriter.save_message(
         message, str(tmp_path / "out"), RECIPIENT.company, RECIPIENT.email, prefer_msg=False
     )
-    assert b"notice.pdf" in open(path, "rb").read()
+    assert b"notice.pdf" in pathlib.Path(path).read_bytes()
 
 
 def test_fallback_to_eml_without_outlook(tmp_path, monkeypatch):
